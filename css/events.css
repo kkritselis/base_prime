@@ -1,0 +1,33 @@
+/* Livewire BI statewide events page. Builds on rep.css (tokens, header, cards, charts). */
+main { max-width: 1200px; }
+.nav { margin-left: auto; display: flex; gap: 18px; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.stat { background: #fff; border-radius: var(--r-card); box-shadow: var(--shadow); padding: 16px 18px; }
+.stat .v { font-size: 30px; font-weight: 600; color: var(--grounded); line-height: 1.1; }
+.stat .v.hot { color: var(--energy); }
+.stat .l { font-size: 12.5px; color: var(--grey-80); margin-top: 4px; }
+.row-controls { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.key { display: flex; gap: 14px; color: var(--grey-80); }
+.key .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: 0; }
+.chart .area { fill: var(--green-5); }
+.chart .line { fill: none; stroke: var(--grounded); stroke-width: 1.2; }
+.chart .evband { opacity: .14; }
+.chart .evband.grid { fill: var(--energy); } .chart .evband.local { fill: var(--grounded); }
+.chart .evband.sel { opacity: .35; }
+.chart .dot.grid { fill: var(--energy); } .chart .dot.local { fill: var(--grounded); }
+.chart .dot { stroke: #fff; stroke-width: 1.5; }
+.chart .cross { stroke: var(--grey-80); stroke-width: 1; stroke-dasharray: 2 2; }
+.chart .pin text.grid { fill: var(--orange-90); }
+.table-wrap { overflow-x: auto; }
+#events { font-size: 13px; }
+#events th { text-align: left; font-weight: 500; color: var(--grey-60); font-size: 11px; text-transform: uppercase; letter-spacing: .4px;
+  border-bottom: 1px solid var(--grey-20); white-space: nowrap; }
+#events td { text-align: left; vertical-align: top; }
+#events td.n, #events th.n { text-align: right; }
+#events tr.ev { cursor: pointer; } #events tr.ev:hover { background: var(--conduit); } #events tr.ev.sel { background: var(--green-5); }
+.tag { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: var(--r-pill); white-space: nowrap; }
+.tag.grid { background: var(--orange-5); color: var(--orange-90); } .tag.local { background: var(--green-5); color: var(--grounded); }
+@media (max-width: 760px) {
+  .stats { grid-template-columns: 1fr 1fr; }
+  .nav { margin-left: 0; }
+}

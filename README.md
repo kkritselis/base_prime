@@ -1,7 +1,8 @@
-# Livewire
+# Livewire BI
 
-**Where Texas needs home backup next.** Livewire ranks every Texas ZIP code by how much it needs, and can buy, whole-home battery
-backup. It then shows which utility stands between Base and each customer.
+**Where Texas needs home backup next.** Livewire BI is a business-intelligence tool for Base Power. It ranks every Texas
+ZIP code by how much it needs, and can buy, whole-home battery backup. It also shows which utility serves each area and
+gives sales and marketing teams the outage story for any ZIP.
 
 **Live demo:** https://keithkritselis.com/base/
 Built solo for the **Base Power × AITX Talent Hackathon** (Austin, Sep 25–27, 2026). Tracks: **Open Grid Data** + **Most Commercializable**.
@@ -10,56 +11,85 @@ Built solo for the **Base Power × AITX Talent Hackathon** (Austin, Sep 25–27,
 
 ## The insight
 
-Texas's biggest outages are mostly **local**, not grid-wide. Of the largest statewide outage days since 2018, only Winter Storm Uri
-(Feb 2021, 4.26M customers out at once) was an ERCOT supply failure. The rest were storms tearing down local wires: Hurricane Nicholas,
-Hurricane Laura, Hurricane Hanna, the 2019 Dallas derecho and tornado. More power plants don't fix those; **backup at the home does.**
-That's Base's product. Livewire finds the homes that need it most, and shows whether Base can reach them today.
+We matched 74,000 notable county outage days (2018–2025) to NOAA storm reports. The biggest cause of lost power in Texas is
+**wind, not the grid**:
 
-| Date | Peak customers out | What happened | Type |
-|---|---|---|---|
-| 2021-02-16 | 4,257,874 | Winter Storm Uri | Grid-wide (supply) |
-| 2021-09-14 | 523,960 | Hurricane Nicholas | Local wires |
-| 2019-06-09 | 384,428 | Dallas derecho | Local wires |
-| 2020-08-27 | 299,096 | Hurricane Laura | Local wires |
-| 2020-07-26 | 238,030 | Hurricane Hanna | Local wires |
-| 2019-10-21 | 187,308 | Dallas tornado | Local wires |
+| Cause | Share of outage hours, 2018–2025 |
+|---|---|
+| **High winds / severe thunderstorms** | **31%** |
+| Grid emergency (Winter Storm Uri only) | 26% |
+| Hurricanes / tropical storms | 14% |
+| Flooding | 7% |
+| No storm on record (equipment, animals, accidents) | 7% |
+| Winter storm / ice | 6% |
+| Extreme heat | 5% |
+| Tornado + hail | 5% |
 
-## What it does
+Of **88 outage events** that left 100,000+ Texans without power, only **one** was an ERCOT grid emergency: Winter Storm
+Uri (Feb 2021, ~5M customers). The rest were local weather tearing down local lines: Hurricane Beryl (2.9M), the 2024
+Houston derecho, the Memorial Day storms, Hurricane Nicholas, the 2023 Central Texas ice storm, and dozens of windstorms.
+More power plants don't fix that. **Backup at the home does**, which is Base's product.
 
-- **Scores ~1,900 Texas ZIP codes (0–100)** on a "Resilience Demand Score": how much a ZIP needs backup, and how good a customer it is.
-- **Market toggle: "Base market today" vs "All of Texas."** Every ZIP is tagged with its actual utility (from the state's Power to
-  Choose data), so Livewire shows both where Base can sell now and where it can't.
-- **Utility ranking.** Outside Base's market (Oncor, CenterPoint, AEP Texas, TNMP), the same scoring shows which co-ops and city
-  utilities hold the most high-demand homes. That makes it a **partnership lead list** for Base's Backup-Only offering
-  (e.g. CPS Energy in San Antonio, the co-ops ringing Dallas–Fort Worth).
-- **Explainable scores.** Click any ZIP to see its score broken into Need / Value / Ability, the top reasons in plain English
-  ("Top 5% for severe-weather risk"), outage history, FEMA hazards, and the local electricity price.
-- **Live weight tuning.** Sliders re-weight the model instantly, e.g. "what if we care most about need?"
+## Three views
+
+### 1. Map (`index.php`)
+- **~1,900 Texas ZIPs** colored by a 0–100 **Resilience Demand Score**, with county lines and city labels.
+- **Utility filter:** check the utilities Base can sell in on the *By utility* tab. The map, totals and lead lists update
+  instantly, and the selection is saved in the browser. The **Base today** preset selects Oncor, CenterPoint,
+  AEP Texas Central/North and TNMP; **All of Texas** shows everything. As Base signs new utility agreements, a rep just
+  ticks a box.
+- **Explainable scores:** click a ZIP for its Need / Value / Ability breakdown, plain-English reasons ("Top 5% for
+  severe-weather risk"), outage history, FEMA hazards and local electricity price.
+- **Live model weights:** sliders re-weight Need / Value / Ability for the whole state.
+- **Lead-list export (CSV):** every ZIP in the current view ranked with score, homes, income, top outage cause, peak season,
+  worst event and a link to its sales view. The *By utility* export labels each utility as a direct-sale market,
+  expansion target or partnership lead.
+- Works on phones: sticky header, collapsible legend.
+
+### 2. Sales call view (`rep.html?zip=77523`)
+For a rep on the phone with a homeowner:
+- **Outage timeline** for the customer's county, month by month from 2018 to 2025, with the storms they'll remember
+  labeled ("Hurricane Beryl, Jul 2024 · 63% out"). Log/linear toggle.
+- **When outages happen:** seasonality, stacked by year or as a heatmap, plus a one-line summary ("Peak season May–Jul;
+  May has outages 8 of 8 years").
+- **Talking points** and **what causes outages here**, each with a copy button.
+- **Campaign brief:** audience, why this ZIP, when to run ads (before peak season, anniversary hooks), and draft angles
+  picked from the county's actual outage causes (storm season, hurricane season, freeze readiness, Uri memory…).
+  These are drafts to adapt, not final copy.
+
+### 3. Statewide events (`events.html`)
+- Daily timeline of Texans without power, 2018–2025, with the largest events labeled. Grid-wide events are orange;
+  local ones are green.
+- Cause breakdown, "What this means for Base" takeaways, and a filterable table of all 88 events. Clicking a row
+  highlights the event on the chart.
 
 ## How the score works
 
-`Score = 0.40 × Need + 0.30 × Value to Base + 0.30 × Ability & Ease`, each part scored 0–100 as a Texas percentile.
+`Score = 0.40 × Need + 0.30 × Value to Base + 0.30 × Ability & Ease`. Each part is a 0–100 Texas percentile, and the weights
+are adjustable in the app.
 
 | Part | Signals |
 |---|---|
-| **Need** | Outage hours per customer and notable-outage days (DOE EAGLE-I, 2018–2025); FEMA risk for hurricane, ice storm, winter weather, wind, tornado, cold and heat waves; share of all-electric homes (lose heat in a winter outage) |
+| **Need** | Outage hours per home and notable-outage days (DOE EAGLE-I, 2018–2025); FEMA risk for hurricane, ice storm, winter weather, wind, tornado, cold and heat waves; share of all-electric homes (they lose heat in a winter outage) |
 | **Value to Base** | Home size (median rooms), home value, electric load |
-| **Ability & Ease** | Household income, homeownership, long-term owners (Base plans are 36 months), new single-family construction |
-| **Filters** | *Good-fit homes:* 500+ residents, 40%+ owner-occupied, 50%+ single-family. *Base market:* Oncor / CenterPoint / AEP Texas / TNMP per Power to Choose |
+| **Ability & Ease** | Household income, homeownership, long-term owners (Base plans run 36 months), new single-family construction |
+| **Good-fit filter** | 500+ residents, 40%+ owner-occupied, 50%+ single-family |
+| **Market** | Wires company per ZIP from the state's Power to Choose site; co-op / city / non-ERCOT utility from EIA-861 |
 
-Missing data re-weights instead of counting as zero. Weights and cutoffs live at the top of `build_scores.py`.
+Missing data re-weights the other signals instead of counting as zero. Cutoffs live at the top of `build_scores.py`.
 
 ## Data pipeline
 
-Plain Python (standard library only, no installs) → CSVs → one PHP page. No database.
+Plain Python (standard library only, no installs) → CSV/JSON → PHP + vanilla JS. No database.
 
 ```
-fetch_data.py     DOE EAGLE-I outages (15-min snapshots, ~10 GB streamed, Texas kept) + Census ACS by ZIP
-                  → cleans stuck readings / duplicates → county outage stats, statewide daily peaks
-fetch_extra.py    FEMA National Risk Index (county + census tract → ZIP), extra Census columns, building permits
-fetch_utility.py  Power to Choose (every Texas ZIP) + EIA-861 via NREL → utility + market for each ZIP, local prices
-build_scores.py   joins everything → data/tx_zip_final.csv (+ ZIP map points) and data/tx_utility_summary.csv
-index.php         Leaflet map + panels, styled with Base's brand (see DESIGN.md)
+fetch_data.py      DOE EAGLE-I outages (15-min snapshots, ~10 GB streamed, Texas kept; stuck readings and duplicates
+                   removed) + Census ACS by ZIP → county outage stats, statewide daily peaks
+fetch_extra.py     FEMA National Risk Index (county + census tract → ZIP), extra Census columns, building permits
+fetch_utility.py   Power to Choose (every Texas ZIP) + EIA-861 via NREL → utility and market per ZIP, local prices
+fetch_shapes.py    Census TIGERweb → simplified ZIP and county boundaries (GeoJSON)
+fetch_events.py    NOAA Storm Events → cause of every notable county outage day; statewide events (grid-wide vs local)
+build_scores.py    joins everything → data/tx_zip_final.csv (+ map points) and data/tx_utility_summary.csv
 ```
 
 ### Run it
@@ -68,47 +98,66 @@ index.php         Leaflet map + panels, styled with Base's brand (see DESIGN.md)
 python fetch_data.py        # first run downloads ~10 GB (cached in data/raw/, git-ignored); ~20–30 min
 python fetch_extra.py       # can run alongside fetch_data.py
 python fetch_utility.py     # ~2,300 Power to Choose lookups, ~5–10 min, resumable
-python build_scores.py      # seconds; add --all-markets to print the statewide top 10
+python fetch_shapes.py      # ~1–3 min
+python fetch_events.py      # after fetch_data.py; downloads ~90 MB of NOAA files once
+python build_scores.py      # seconds
 php -S localhost:8000       # open http://localhost:8000
 ```
 
-The processed CSVs in `data/` are committed, so the map runs right after cloning. The fetch scripts are only needed to rebuild.
+The processed files in `data/` are committed, so the app runs right after cloning. The fetch scripts are only needed to
+rebuild the data.
+
+### Deploying
+Upload the web files plus `data/*.csv`, `data/*.json` and `data/*.geojson` (not `data/raw/`). After editing CSS or JS,
+bump the version string (`$v` in `index.php`, `?v=` in `rep.html` / `events.html`) so browsers and host caches load the
+new files. When uploading through cPanel, check **Overwrite existing files**.
 
 ## Repo layout
 
 ```
-index.php            the app
+index.php            map page (PHP loads the data; markup only)
+rep.html             sales call view
+events.html          statewide events
+api.php              JSON for one ZIP (used by the sales view)
+css/  map.css · rep.css · events.css
+js/   map.js  · rep.js  · events.js
 build_scores.py      scoring model
 fetch_*.py           data pipeline
-data/*.csv           processed outputs (committed)
-data/raw/            downloads cache (git-ignored)
+data/*.csv|json|geojson  processed data (committed)
+data/raw/            download cache (git-ignored)
 DESIGN.md            Base brand tokens used for styling
 ```
 
 ## Data sources
 
-- **DOE EAGLE-I** county power outages, 2014–2025, © Oak Ridge National Laboratory, CC BY 4.0. doi:10.6084/m9.figshare.24237376
+- **DOE EAGLE-I** county power outages, © Oak Ridge National Laboratory, CC BY 4.0, doi:10.6084/m9.figshare.24237376
+- **NOAA NCEI Storm Events Database**, 2018–2025 (outage causes, storm names)
 - **FEMA National Risk Index** (Dec 2025), counties and census tracts
-- **U.S. Census Bureau:** ACS 2020–2024 5-year (population, income, tenure, units in structure, home value, heating fuel, rooms,
-  year moved in), 2020 ZIP (ZCTA) relationship files and Gazetteer, Building Permits Survey 2022–2024
-- **PUCT Power to Choose:** open-market plans and wires company for each ZIP
-- **DOE/NREL Utility Rates by ZIP (2024)**, from EIA Form 861: co-op, city and non-ERCOT utility names and residential rates
+- **U.S. Census Bureau:** ACS 2020–2024 5-year, 2020 ZIP (ZCTA) relationship files and Gazetteer, TIGERweb boundaries,
+  Building Permits Survey 2022–2024
+- **PUCT Power to Choose:** open-market plans and wires company per ZIP
+- **DOE/NREL Utility Rates by ZIP (2024)**, from EIA Form 861
+- Basemap © OpenStreetMap contributors © CARTO
 
 ## Limitations
 
-- Outage data is **county-level**; every ZIP in a county shares its outage history. The script removes stuck utility-map readings
-  (the same count repeated for 3+ days) and caps the top 1% of values.
+- Outage history is **county-level**; every ZIP in a county shares it. Stuck utility-map readings (the same count for 3+
+  days) are removed, and the top 1% of values is capped.
+- Outage causes come from matching dates to NOAA reports. A day is attributed to a storm reported in that county
+  (±1 day), a storm's restoration tail (up to 14 days), or the day's dominant regional storm. Four widely reported
+  unnamed events (Houston derecho, Memorial Day storms, Central Texas ice storm, Dallas windstorm) are named by date.
 - A "notable outage day" means 2%+ of a county's customers were out at once, usually a small area for a few hours.
-- Utility assignment uses one lookup per ZIP; ZIPs on a service boundary can be split in reality.
-- Scores rank ZIPs against each other. They're a targeting aid, not a forecast of sales.
+- Utility per ZIP comes from one Power to Choose lookup; ZIPs on a service boundary can be split in reality.
+- Scores rank ZIPs against each other. They're a targeting aid, not a sales forecast. Campaign briefs are drafts to be
+  checked against Base's brand and product claims.
 
 ## Next steps
 
-- Label each outage event grid-wide vs. local using ERCOT supply/demand and prices for the same dates (a deeper Track 1 tie-in)
-- Add ERCOT load-zone price volatility to "Value to Base" (batteries in spikier zones earn more for the grid)
-- ZIP boundary polygons instead of points; exportable lead lists by utility
+- Battery grid value: add ERCOT load-zone price volatility to "Value to Base" (batteries in spikier zones earn more)
+- Stack monthly outage hours by cause in the sales view
+- ZIP-level outage data where utilities publish it
 
 ---
 
 Styling follows Base Power's public brand using free substitute fonts; no Base font or logo files are included.
-Built for the Base Power × AITX Hackathon. **Not an official Base product.** See `LICENSE`.
+Built for the Base Power × AITX Hackathon. **Not an official Base product.** MIT License, see `LICENSE`.

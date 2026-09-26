@@ -54,8 +54,41 @@ details summary{cursor:pointer;font-weight:600;font-size:13px}
 .w input{accent-color:var(--grounded)}
 footer{font-size:11px;color:var(--grey-60);padding:6px 20px;background:var(--conduit)}
 .err{margin:40px auto;max-width:520px}
-@media (max-width:820px){main{flex-direction:column-reverse} aside{width:100%;max-height:50vh}}
+.legend-toggle{all:unset;display:flex;align-items:center;gap:8px;cursor:pointer;width:100%;justify-content:space-between}
+.legend-toggle .chev{font-size:12px;color:var(--grey-60);transition:transform .15s}
+.legend.collapsed .legend-body{display:none}
+.legend.collapsed .chev{transform:rotate(-90deg)}
+.legend-body{margin-top:4px}
+.hdr-link.short{display:none}
+
+/* ---- phones / narrow screens: page scrolls, header stays on top, map first, panels below ---- */
+@media (max-width:820px){
+  html,body{height:auto}
+  body{display:block}
+  header{position:sticky;top:0;z-index:1500;padding:10px 14px;gap:8px 12px}
+  header h1{font-size:16px}
+  header .eyebrow{font-size:10px}
+  header .spacer{display:none}
+  .hdr-link{padding:5px 10px;font-size:12px}
+  .hdr-link.long{display:none} .hdr-link.short{display:inline-block}
+  .seg button{padding:6px 10px;font-size:12px}
+  .ctl{font-size:12px}
+  .ctl input[type=range]{width:90px}
+  main{display:flex;flex-direction:column}
+  #map{order:0;height:58vh;height:58svh;min-height:320px;flex:none}
+  aside{order:1;width:100%;max-height:none;overflow:visible;padding:12px}
+  .legend{max-width:62vw}
+}
 .chip.link{text-decoration:none}
 .chip.link:hover{background:var(--livewire)}
 .hdr-link{color:#fff;font-weight:600;font-size:13px;text-decoration:none;border:1px solid rgba(255,255,255,.35);padding:6px 12px;border-radius:var(--r-pill)}
 .hdr-link:hover{background:rgba(255,255,255,.12)}
+.tabs .export{margin-left:auto;background:var(--livewire);border-color:var(--livewire);color:var(--grounded)}
+.tabs .export:hover{background:var(--green-60);border-color:var(--green-60)}
+.presets{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.presets button,.more{border:1px solid var(--grey-20);background:#fff;font:600 11.5px var(--font);padding:3px 10px;border-radius:var(--r-pill);cursor:pointer;color:var(--grounded)}
+.presets button:hover,.more:hover{background:var(--green-5)}
+.more{margin-top:8px}
+table.util td:first-child{width:22px;vertical-align:middle}
+table.util input{accent-color:var(--grounded);width:16px;height:16px;cursor:pointer}
+table.util tr:not(.on) td:not(:first-child){color:var(--grey-60)}

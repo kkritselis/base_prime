@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Livewire BI: Texas outage events 2018–2025</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Zilla+Slab:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/rep.css?v=20260926h">
+<link rel="stylesheet" href="css/events.css?v=20260926h">
+</head>
+<body>
+<header>
+  <div>
+    <div class="eyebrow">Livewire BI · Statewide events</div>
+    <h1>Why Texans lose power, 2018–2025</h1>
+  </div>
+  <nav class="nav">
+    <a class="back" href="./">Map</a>
+    <a class="back" href="rep.html">Sales view</a>
+  </nav>
+</header>
+
+<main>
+  <section class="stats" id="stats"></section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>Customers without power statewide, day by day</h2>
+      <span class="small muted" id="tlSub"></span>
+    </div>
+    <div class="row-controls">
+      <div class="scale" role="group" aria-label="Chart scale">
+        <button class="on" data-tscale="log" title="Everyday outages and major events on one chart">Log scale</button>
+        <button data-tscale="linear" title="True proportions">Linear</button>
+      </div>
+      <div class="key small">
+        <span><span class="sw" style="background:var(--energy)"></span>Grid-wide (ERCOT load shed)</span>
+        <span><span class="sw" style="background:var(--grounded)"></span>Local weather / wires</span>
+      </div>
+    </div>
+    <div id="timeline" class="chart" role="img" aria-label="Daily peak customers without power in Texas"></div>
+    <p class="small muted">Daily peak of customers out at the same moment, summed across all Texas counties (DOE EAGLE-I).
+      Labeled: the largest events. Hover for details; click an event in the table to highlight it.</p>
+  </section>
+
+  <div class="grid2">
+    <section class="card">
+      <h2>What caused the outage hours</h2>
+      <div id="causes"></div>
+      <p class="small muted">Share of all customer-hours without power in notable outages (1%+ of a county out), matched to
+        NOAA storm reports. Only Winter Storm Uri was an ERCOT grid emergency.</p>
+    </section>
+    <section class="card">
+      <h2>What this means for Base</h2>
+      <ul class="points" id="takeaways"></ul>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>Every major outage event</h2>
+      <div class="scale" role="group" aria-label="Filter events">
+        <button class="on" data-filter="all">All</button>
+        <button data-filter="local">Local</button>
+        <button data-filter="grid">Grid-wide</button>
+      </div>
+    </div>
+    <div class="table-wrap"><table id="events"></table></div>
+  </section>
+</main>
+
+<footer>Outages: DOE EAGLE-I (ORNL, CC BY 4.0) · causes: NOAA Storm Events · event names for unnamed storms added from news coverage. Not an official Base product.</footer>
+<div id="tip" class="tip" hidden></div>
+<script src="js/events.js?v=20260926h"></script>
+</body>
+</html>

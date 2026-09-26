@@ -13,7 +13,8 @@ Method: every notable county outage day (1%+ of customers out at once) is matche
 Outputs (data/):
   tx_county_causes.csv        per county: share of outage customer-hours by cause, top cause, notable days by cause
   tx_county_events.json       per county: 5 worst outage days (date, % out, cause, storm name) + monthly outage series
-  tx_statewide_events.csv     top 40 statewide outage days, classified grid-wide vs local, with cause and storm name
+  tx_statewide_events.csv     statewide outage events (100k+ customers), grid-wide vs local, with cause and storm name
+  tx_statewide_causes.csv     statewide share of outage customer-hours by cause
 """
 import csv, gzip, io, json, os, re, urllib.request
 from collections import Counter, defaultdict
@@ -249,6 +250,11 @@ def main():
     for fp in ch_by_cause:
         for c, v in ch_by_cause[fp].items(): allc[c] += v
     tot = sum(allc.values())
+    with open(os.path.join(DATA, "tx_statewide_causes.csv"), "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f); w.writerow(["cause", "label", "customer_hours", "share"])
+        for c, v in allc.most_common():
+            w.writerow([c, LABEL[c], round(v), round(v / tot, 4) if tot else ""])
+    print("   wrote data/tx_statewide_causes.csv")
     print("\nStatewide outage customer-hours by cause:",
           ", ".join("%s %d%%" % (LABEL[c], round(100 * v / tot)) for c, v in allc.most_common() if v / tot >= 0.005))
 

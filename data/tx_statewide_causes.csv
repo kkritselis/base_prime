@@ -1,0 +1,12 @@
+cause,label,customer_hours,share
+wind,high winds / severe thunderstorms,263393233,0.3077
+grid,grid emergency (ERCOT load shed),219439604,0.2563
+tropical,hurricane / tropical storm,119216406,0.1393
+none,no storm on record,61584919,0.0719
+flood,flooding,57833704,0.0676
+winter,winter storm / ice,47141629,0.0551
+heat,extreme heat,40412110,0.0472
+tornado,tornado,37462093,0.0438
+hail,hail,8414826,0.0098
+lightning,lightning,775586,0.0009
+wildfire,wildfire,401275,0.0005
