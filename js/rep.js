@@ -1,7 +1,7 @@
 // Livewire BI sales-call view: ZIP lookup -> outage timeline, talking points, cause mix, campaign brief.
 // Data comes from api.php?zip=XXXXX (reads the pipeline CSV/JSON in data/).
 (() => {
-  const VERSION = '2026-09-26d (stacked log toggle)';
+  const VERSION = '2026-09-26j (restore time)';
   const DEBUG = true;                                  // set false to silence the [Livewire] logs
   const log = (...a) => DEBUG && console.log('%c[Livewire]', 'color:#1E4D2B;font-weight:bold', ...a);
   log('rep.js loaded, version', VERSION);
@@ -301,6 +301,9 @@
       pts.push(`Since 2018, homes in ${county} County have averaged about <b>${z.outage_hours.toFixed(0)} hours a year without power</b>.`);
     if (z.event_days != null)
       pts.push(`There are about <b>${Math.round(z.event_days)} days a year</b> when a noticeable share of the county loses power (usually a few hours in one area).`);
+    if (z.restore_hours != null)
+      pts.push(`When a major outage hits ${county} County, it typically takes <b>about ${Math.round(z.restore_hours)} hours</b> to get 90% of homes back on` +
+        (z.longest_restore_hours >= 24 ? `. The longest took <b>${(z.longest_restore_hours / 24).toFixed(1)} days</b> (${dayName(z.longest_restore_start)}).` : '.'));
     events.slice(0, 2).forEach((e, i) => pts.push(`${i ? 'Also' : 'Worst'}: <b>${esc(e.label)}</b>. On ${dayName(e.date)}, <b>${Math.round(e.pct_out)}% of homes</b> in the county lost power at once.`));
     if (weather.length)
       pts.push(`Most outages here come from <b>${CAUSE_LABEL[weather[0][0]].toLowerCase()}</b> (${Math.round(weather[0][1] * 100)}% of outage hours${weather[1] ? `, then ${CAUSE_LABEL[weather[1][0]].toLowerCase()} at ${Math.round(weather[1][1] * 100)}%` : ''}).`);

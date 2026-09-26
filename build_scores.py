@@ -28,7 +28,7 @@ DATA = os.path.join(HERE, "data")
 
 # ---- Tunables -------------------------------------------------------------
 WEIGHTS = {"need": 0.40, "value": 0.30, "ability": 0.30}
-NEED = {"outage_hours": 0.35, "event_days": 0.15, "weather_hazard": 0.35, "electric_heat": 0.15}
+NEED = {"outage_hours": 0.30, "event_days": 0.10, "restore_hours": 0.15, "weather_hazard": 0.30, "electric_heat": 0.15}
 VALUE = {"rooms": 0.50, "home_value": 0.30, "electric_heat": 0.20}
 ABILITY = {"income": 0.40, "owner_rate": 0.30, "stability": 0.15, "growth": 0.15}
 # FEMA NRI hazards that cause outages (scores are 0-100 national percentiles)
@@ -95,6 +95,7 @@ def wavg(parts, weights):
 
 LABELS = {
     "outage_hours": "outage hours per customer", "event_days": "major outage days",
+    "restore_hours": "slow power restoration",
     "weather_hazard": "severe-weather risk (FEMA)", "electric_heat": "all-electric heating",
     "rooms": "home size", "home_value": "home value", "income": "household income",
     "owner_rate": "homeownership", "stability": "long-term owners", "growth": "new-home growth",
@@ -104,6 +105,7 @@ def main():
     prof = load("tx_zip_profile.csv", "zip")
     extra = load("tx_zip_extra.csv", "zip")
     outage = load("tx_county_outage_summary.csv", "county_fips")
+    dur = load("tx_county_duration.csv", "county_fips")      # fetch_duration.py (optional)
     util = load("tx_zip_utility.csv", "zip")
     pts = zip_points()
     if not prof:
@@ -112,6 +114,7 @@ def main():
     rows = []
     for z, p in prof.items():
         e = extra.get(z, {}); cf = p.get("county_fips") or e.get("county_fips", ""); o = outage.get(cf, {})
+        du = dur.get(cf, {})
         haz = [num(e.get(h + "_score")) for h in OUTAGE_HAZARDS]
         haz = [h for h in haz if h is not None]
         moved = num(e.get("owner_median_year_moved_in"))
@@ -123,6 +126,12 @@ def main():
             "median_home_value": num(p.get("median_home_value")),
             "outage_hours": num(o.get("avg_annual_outage_hours_per_customer")),
             "event_days": num(o.get("event_days_per_year")),
+            # restoration after major outages; counties with <3 major outages have too little history to rank
+            "restore_hours": num(du.get("median_restore_hours")) if (num(du.get("major_outages")) or 0) >= 3 else None,
+            "avg_outage_length": num(du.get("avg_outage_hours")),
+            "major_outages": num(du.get("major_outages")),
+            "longest_restore_hours": num(du.get("longest_restore_hours")),
+            "longest_restore_start": du.get("longest_restore_start", ""),
             "weather_hazard": sum(haz) / len(haz) if haz else None,
             "electric_heat": num(e.get("electric_heat_share")), "rooms": num(e.get("median_rooms")),
             "stability": (2024 - moved) if moved else None,
@@ -131,7 +140,7 @@ def main():
             **{h + "_score": num(e.get(h + "_score")) for h in OUTAGE_HAZARDS},
         })
 
-    metrics = {"outage_hours", "event_days", "weather_hazard", "electric_heat", "rooms",
+    metrics = {"outage_hours", "event_days", "restore_hours", "weather_hazard", "electric_heat", "rooms",
                "home_value", "income", "owner_rate", "stability", "growth"}
     src = {"home_value": "median_home_value", "income": "median_hh_income"}
     rankers = {m: pct_ranker([r[src.get(m, m)] for r in rows]) for m in metrics}
@@ -184,7 +193,8 @@ def main():
               "other_utilities_nearby", "not_serviceable_reason",
               "resilience_demand_score", "need_score", "value_score", "ability_score", "top_reasons",
               "addressable_homes", "population", "median_hh_income", "owner_rate", "single_family_rate",
-              "median_home_value", "rooms", "electric_heat", "outage_hours", "event_days", "weather_hazard",
+              "median_home_value", "rooms", "electric_heat", "outage_hours", "event_days", "restore_hours",
+              "avg_outage_length", "major_outages", "longest_restore_hours", "longest_restore_start", "weather_hazard",
               "fema_risk_score"] + [h + "_score" for h in OUTAGE_HAZARDS] + ["stability", "growth"]
     out = os.path.join(DATA, "tx_zip_final.csv")
     with open(out, "w", newline="", encoding="utf-8") as f:

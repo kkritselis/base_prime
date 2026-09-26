@@ -12,7 +12,7 @@ const pct = n => n == null ? '–' : Math.round(n * 100) + '%';
 const money = n => n == null ? '–' : '$' + Math.round(n).toLocaleString();
 const $ = id => document.getElementById(id);
 
-const state = { market: 'filter', showAllUtil: false, min: 0, fitOnly: true, tab: 'zips', sel: null, w: { need: 40, value: 30, ability: 30 } };
+const state = { market: 'filter', showAllUtil: false, min: 0, fitOnly: true /* always on: ZIPs that are mostly renters/apartments are greyed out */, tab: 'zips', sel: null, w: { need: 40, value: 30, ability: 30 } };
 
 function score(r) {
   const parts = [[r.need_score, state.w.need], [r.value_score, state.w.value], [r.ability_score, state.w.ability]]
@@ -84,7 +84,7 @@ legend.onAdd = () => {
       <b>Resilience demand</b><span class="chev">▾</span></button><div class="legend-body">` + BINS.map((b, i) =>
     `<div class="row"><span class="sw sq" style="background:${b[1]}"></span>${i ? b[0] + '–' + (BINS[i-1][0]-1) : b[0] + '+'}</div>`).join('') +
     '<div class="row"><span class="sw sq" style="background:#1E4D2B;opacity:.45"></span>Faded = unselected utility</div>' +
-    '<div class="row"><span class="sw sq" style="background:#D8D7D5;opacity:.5"></span>Filtered out / no data</div>' +
+    '<div class="row"><span class="sw sq" style="background:#D8D7D5;opacity:.5"></span>Mostly renters / apartments, or below min score</div>' +
     '<div class="row"><span style="display:inline-block;width:14px;border-top:1.5px solid #54524F"></span>County lines</div></div>';
   L.DomEvent.disableClickPropagation(d);
   d.querySelector('.legend-toggle').onclick = () => {
@@ -152,7 +152,7 @@ function renderList(vis) {
         <span class="small muted">${SEL.size} selected</span></div>
       <p class="small muted" style="margin:0 0 6px">Check the utilities Base can sell in. Saved in this browser.
         High-demand = score ${HIGH}+; unchecked utilities with high demand are partnership leads.</p>
-      <table class="util"><tr><th></th><th>Utility</th><th class="n">High-demand homes</th><th class="n">Fit homes</th></tr>` +
+      <table class="util"><tr><th></th><th>Utility</th><th class="n">High-demand homes</th><th class="n">Owned homes</th></tr>` +
       shown.map(u => `<tr class="${SEL.has(u.name) ? 'on' : ''}"><td><input type="checkbox" data-u="${encodeURIComponent(u.name)}" ${SEL.has(u.name) ? 'checked' : ''} aria-label="Map ${u.name}"></td>
         <td>${u.name}<br><span class="chip ${u.market === 'base_tdsp' ? 'base' : ''}">${label(u.market)}</span></td>
         <td class="n"><b>${fmt(u.hd)}</b></td><td class="n">${fmt(u.homes)}</td></tr>`).join('') + '</table>' +
@@ -194,17 +194,17 @@ function exportLeads() {
     const rows = fit.slice().sort((a, b) => (b._s ?? 0) - (a._s ?? 0));
     download(`livewire-leads_zips_${view}_${stamp}.csv`, [[note], [
       'rank', 'zip', 'county', 'utility', 'market', 'utility_selected', 'demand_score', 'need', 'value', 'ability',
-      'fit_homes', 'median_income', 'owner_rate', 'single_family_rate', 'electric_heat_share', 'outage_hours_per_home_yr',
-      'notable_outage_days_yr', 'top_outage_cause', 'peak_outage_season', 'worst_event', 'why_this_zip', 'sales_view_link'],
+      'owner_occupied_single_family_homes', 'median_income', 'owner_rate', 'single_family_rate', 'electric_heat_share', 'outage_hours_per_home_yr',
+      'notable_outage_days_yr', 'typical_restore_hours_major', 'avg_outage_length_hours', 'top_outage_cause', 'peak_outage_season', 'worst_event', 'why_this_zip', 'sales_view_link'],
       ...rows.map((r, i) => [i + 1, r.zip, r.county_name.replace(/ County$/, ''), r.utility, label(r.market), isSel(r) ? 'yes' : 'no',
         r._s == null ? '' : r._s.toFixed(1), r.need_score?.toFixed(0), r.value_score?.toFixed(0), r.ability_score?.toFixed(0),
         r.addressable_homes, r.median_hh_income, r.owner_rate, r.single_family_rate, r.electric_heat,
-        r.outage_hours?.toFixed(1), r.event_days?.toFixed(0), r.top_cause, r.peak_season, r.worst_event,
+        r.outage_hours?.toFixed(1), r.event_days?.toFixed(0), r.restore_hours?.toFixed(0), r.avg_outage_length?.toFixed(1), r.top_cause, r.peak_season, r.worst_event,
         r.top_reasons, base + 'rep.html?zip=' + r.zip])]);
   } else {
     const list = utilityRollup(candidates());   // all utilities, with a 'selected' column
     download(`livewire-leads_utilities_${view}_${stamp}.csv`, [[note], [
-      'rank', 'utility', 'market', 'selected', 'zips', 'fit_homes', 'high_demand_zips', 'high_demand_homes',
+      'rank', 'utility', 'market', 'selected', 'zips', 'owner_occupied_single_family_homes', 'high_demand_zips', 'high_demand_homes',
       'avg_score_home_weighted', 'main_outage_cause', 'opportunity'],
       ...list.map((u, i) => {
         const cause = Object.entries(u.cause).sort((a, b) => b[1] - a[1])[0];
@@ -252,12 +252,14 @@ function renderDetail(r) {
     ${r.top_reasons ? '<ul class="reasons">' + r.top_reasons.split('; ').map(x => `<li>${x}</li>`).join('') + '</ul>' : ''}
     ${r.not_serviceable_reason ? `<p class="small" style="color:#742C0B;margin:8px 0 0">⚠ ${r.not_serviceable_reason}</p>` : ''}
     <div class="stats">
-      <div><span>Fit homes</span><b>${fmt(r.addressable_homes)}</b></div>
+      <div><span title="Estimated owner-occupied single-family homes: the homes Base can install a battery on">Owned homes</span><b>${fmt(r.addressable_homes)}</b></div>
       <div><span>Median income</span><b>${money(r.median_hh_income)}</b></div>
       <div><span>Owner-occupied</span><b>${pct(r.owner_rate)}</b></div>
       <div><span>Single-family</span><b>${pct(r.single_family_rate)}</b></div>
       <div><span title="Total customer-hours without power per year ÷ customers in the county (2018–2025)">Hours without power / customer / yr*</span><b>${r.outage_hours == null ? '–' : r.outage_hours.toFixed(1)}</b></div>
       <div><span title="Days per year when at least 2% of the county's customers (min. 100) were out at the same time">Days with a notable outage / yr*</span><b>${r.event_days == null ? '–' : r.event_days.toFixed(0)}</b></div>
+      <div><span title="Median hours from the peak of a major outage (1%+ of the county out) until 90% of those customers had power back">Typical restore time, major outages*</span><b>${r.restore_hours == null ? '–' : r.restore_hours.toFixed(0) + ' h'}</b></div>
+      <div><span title="Estimated average length of an outage for an affected customer">Avg outage length*</span><b>${r.avg_outage_length == null ? '–' : r.avg_outage_length.toFixed(1) + ' h'}</b></div>
       <div><span>Electric heat</span><b>${pct(r.electric_heat)}</b></div>
       <div><span>Median rooms</span><b>${r.rooms == null ? '–' : r.rooms.toFixed(1)}</b></div>
       <div><span>${price[0]}</span><b>${price[1]}</b></div>
@@ -273,7 +275,6 @@ function renderDetail(r) {
 $('mBase').onclick = () => { state.market = 'filter'; $('mBase').classList.add('on'); $('mAll').classList.remove('on'); draw(); };
 $('mAll').onclick = () => { state.market = 'all'; $('mAll').classList.add('on'); $('mBase').classList.remove('on'); draw(); };
 $('minScore').oninput = e => { state.min = +e.target.value; $('minScoreV').textContent = state.min; draw(); };
-$('fitOnly').onchange = e => { state.fitOnly = e.target.checked; draw(); };
 $('tZips').onclick = () => { state.tab = 'zips'; $('tZips').classList.add('on'); $('tUtil').classList.remove('on'); draw(); };
 $('tUtil').onclick = () => { state.tab = 'util'; $('tUtil').classList.add('on'); $('tZips').classList.remove('on'); draw(); };
 ['Need', 'Value', 'Ability'].forEach(k => $('w' + k).oninput = e => {
