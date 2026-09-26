@@ -78,12 +78,12 @@ $updated = file_exists($csvPath) ? date('M j, Y g:ia', filemtime($csvPath)) : ''
     </div>
   </div>
   <div class="spacer"></div>
-  <a href="events.html" class="hdr-link long">Statewide events →</a>
-  <a href="events.html" class="hdr-link short">Events →</a>
   <a href="rep.html" target="_blank" class="hdr-link long">Sales View →</a>
   <a href="rep.html" class="hdr-link short">Sales →</a>
   <a href="plan.html" class="hdr-link long">Marketing plan →</a>
   <a href="plan.html" class="hdr-link short">Plan →</a>
+  <a href="events.html" class="hdr-link long">Statewide events →</a>
+  <a href="events.html" class="hdr-link short">Events →</a>
   <div class="seg" role="tablist" aria-label="Market">
     <button id="mBase" class="on" title="Only utilities checked in the By utility tab (default: Base's market today)">Selected utilities</button>
     <button id="mAll">All of Texas</button>
