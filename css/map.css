@@ -92,3 +92,8 @@ footer{font-size:11px;color:var(--grey-60);padding:6px 20px;background:var(--con
 table.util td:first-child{width:22px;vertical-align:middle}
 table.util input{accent-color:var(--grounded);width:16px;height:16px;cursor:pointer}
 table.util tr:not(.on) td:not(:first-child){color:var(--grey-60)}
+
+/* ---- logo ---- */
+.brand{display:flex;align-items:center;gap:16px}
+.logo{height:40px;width:auto;display:block}
+@media (max-width:760px){.brand{gap:10px}.brand .logo{height:28px}.brand .eyebrow{display:none}}

@@ -1,4 +1,9 @@
-# Livewire BI
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="logo-light.png">
+    <img src="logo.png" alt="Livewire BI" width="400">
+  </picture>
+</h1>
 
 ![Livewire BI: the map, the sales call view and the statewide events page](interface.png)
 
@@ -32,7 +37,7 @@ Uri (Feb 2021, ~5M customers). The rest were local weather tearing down local li
 Houston derecho, the Memorial Day storms, Hurricane Nicholas, the 2023 Central Texas ice storm, and dozens of windstorms.
 More power plants don't fix that. **Backup at the home does**, which is Base's product.
 
-## Three views
+## Four views
 
 ### 1. Map (`index.php`)
 - **~1,900 Texas ZIPs** colored by a 0–100 **Resilience Demand Score**, with county lines and city labels.
@@ -66,6 +71,19 @@ For a rep on the phone with a homeowner:
   highlights the event on the chart.
 - **Battery grid value by ERCOT zone:** typical-year and 2021 (Uri) earnings per kW for a home battery, plus price
   spikes per year, from ERCOT's own settlement prices.
+
+### 4. Marketing plan (`plan.html`)
+- Groups target ZIPs (score threshold adjustable, utilities from the map's filter) into segments by main outage cause:
+  storm season, hurricane season, freeze readiness, summer heat, everyday outages.
+- Per segment: homes, top counties, suggested share of effort, typical restoration time, anniversary hooks and a draft headline.
+- Campaign calendar: a season push before the month that most often brings bad outages (counted by years, so one huge
+  event can't set the season) plus a signature push before the segment's biggest named event.
+- Target list with a built-in holdout test (campaign and holdout ZIPs alternate within each segment), exportable as CSV.
+- **Market signals** (live, cached on the server):
+  - `permits.php`: Base Power battery permits from the City of Austin's open data (residential "auxiliary power"
+    permits, counts by month and ZIP only). Compares installs per home with the Livewire score and home value.
+  - `news.php`: recent articles mentioning Base Power, from publishers' own RSS search feeds.
+  - Links to Base's and competitors' ads in the Meta Ad Library and Google Ads Transparency Center.
 
 ## How the score works
 
@@ -119,21 +137,26 @@ rebuild the data.
 Upload the web files plus `data/*.csv`, `data/*.json` and `data/*.geojson` (not `data/raw/`). After editing CSS or JS,
 bump the version string (`$v` in `index.php`, `?v=` in `rep.html` / `events.html`) so browsers and host caches load the
 new files. When uploading through cPanel, check **Overwrite existing files**.
+`permits.php` and `news.php` need outbound HTTP from the host (cURL or `allow_url_fopen`) and cache their results in
+`data/cache/` (created automatically if `data/` is writable).
 
 ## Repo layout
 
 ```
 index.php            map page (PHP loads the data; markup only)
 rep.html             sales call view
+plan.html            marketing plan
 events.html          statewide events
 api.php              JSON for one ZIP (used by the sales view)
-css/  map.css · rep.css · events.css
-js/   map.js  · rep.js  · events.js
+permits.php, news.php  live market signals for the marketing plan (cached)
+css/  map.css · rep.css · events.css · plan.css
+js/   map.js  · rep.js  · events.js  · plan.js
 build_scores.py      scoring model
 fetch_*.py           data pipeline
 data/*.csv|json|geojson  processed data (committed)
 data/raw/            download cache (git-ignored)
 DESIGN.md            Base brand tokens used for styling
+logo.png, logo-light.png, favicon.png   Livewire BI logo (dark text / light text for dark backgrounds) and icon
 ```
 
 ## Data sources
@@ -143,6 +166,8 @@ DESIGN.md            Base brand tokens used for styling
 - **FEMA National Risk Index** (Dec 2025), counties and census tracts
 - **U.S. Census Bureau:** ACS 2020–2024 5-year, 2020 ZIP (ZCTA) relationship files and Gazetteer, TIGERweb boundaries,
   Building Permits Survey 2022–2024
+- **City of Austin Open Data:** Issued Construction Permits (Base Power battery installs)
+- **Publisher RSS feeds** (Electrek, pv magazine USA, TechCrunch, CleanTechnica, Energy-Storage.news) for press coverage
 - **ERCOT** Historical RTM Load Zone and Hub Prices (report 13061), 15-minute settlement point prices, 2018–2025
 - **PUCT Power to Choose:** open-market plans and wires company per ZIP
 - **DOE/NREL Utility Rates by ZIP (2024)**, from EIA Form 861

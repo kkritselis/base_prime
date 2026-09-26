@@ -88,3 +88,9 @@ footer { font-size: 11px; color: var(--grey-60); text-align: center; padding: 0 
 
 .scale[hidden] { display: none; }
 #seasonScale { margin-left: 8px; }
+
+/* ---- logo ---- */
+.brandrow{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.brandrow .logo{height:30px;width:auto;display:block}
+.brandrow .eyebrow{border-left:1px solid rgba(255,255,255,.3);padding-left:12px}
+@media (max-width:760px){.brandrow .logo{height:24px}}

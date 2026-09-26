@@ -25,3 +25,6 @@ desktop.ini
 .vscode/
 .idea/
 *.swp
+
+# live API caches (permits.php, news.php)
+data/cache/

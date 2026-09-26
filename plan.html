@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Livewire BI: Marketing plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Zilla+Slab:wght@700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="stylesheet" href="css/rep.css?v=20260926n">
+<link rel="stylesheet" href="css/plan.css?v=20260926m">
+</head>
+<body>
+<header>
+  <div>
+    <div class="brandrow"><a href="./" title="Back to the map"><img src="logo-light.png" alt="Livewire BI" class="logo" width="397" height="96"></a><span class="eyebrow">Marketing plan</span></div>
+    <h1>Where, when and how to market home backup</h1>
+  </div>
+  <nav class="nav">
+    <a class="back" href="./">Map</a>
+    <a class="back" href="rep.html">Sales View</a>
+    <a class="back" href="events.html">Statewide events</a>
+  </nav>
+</header>
+
+<main>
+  <section class="card controls">
+    <div>
+      <div class="lbl">Markets</div>
+      <div class="scale" role="group" aria-label="Markets">
+        <button class="on" data-scope="sel">Selected utilities</button>
+        <button data-scope="base">Base today</button>
+      </div>
+      <div class="small muted" id="scopeNote"></div>
+    </div>
+    <div>
+      <div class="lbl">Target ZIPs scoring at least <b id="minVal">65</b></div>
+      <input type="range" id="min" min="55" max="80" step="1" value="65" aria-label="Minimum score">
+    </div>
+  </section>
+
+  <section class="stats" id="stats"></section>
+
+  <section class="card">
+    <h2>Plan at a glance</h2>
+    <ul class="points" id="summary"></ul>
+  </section>
+
+  <section>
+    <div class="section-title">Segments <span class="small muted">each target ZIP is grouped by what knocks its power out most (NOAA-matched outage causes, 2018–2025)</span></div>
+    <div class="segs" id="segs"></div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>Campaign calendar</h2>
+      <span class="small muted">shading = how often the month brings a bad outage month (share of years 2018–2025, excluding Uri)</span>
+    </div>
+    <div class="cal-wrap"><div id="cal"></div></div>
+    <div class="legend-row small">
+      <span><span class="mark launch">▲</span> campaign push (a month ahead)</span>
+      <span><span class="mark anniv">★</span> anniversary hook</span>
+      <span><span class="sw" style="background:var(--grounded)"></span>% = years with a bad outage month</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>Target list</h2>
+      <button class="ghost" id="export">⬇ Export CSV</button>
+    </div>
+    <p class="small muted">Highest scores first. Test group alternates within each segment so campaign and holdout ZIPs are
+      matched on score and outage cause. Click a ZIP for its sales view and campaign brief.</p>
+    <div class="table-wrap"><table id="targets"></table></div>
+    <button class="ghost more" id="more">Show all</button>
+  </section>
+
+  <div class="grid2">
+    <section class="card">
+      <h2>How to measure it</h2>
+      <ul class="points" id="measure"></ul>
+    </section>
+    <section class="card">
+      <h2>What this plan doesn't know yet</h2>
+      <ul class="points">
+        <li><b>Cost and conversion:</b> Base's cost per lead, close rate and pricing by channel. With them, effort shares become a budget.</li>
+        <li><b>Competition:</b> where generator and solar-plus-battery installers already advertise.</li>
+        <li><b>Existing customers:</b> ZIPs where Base already has homes (referral and neighbor campaigns work best there).</li>
+        <li><b>Street-level outages:</b> outage history is by county; Base's own battery fleet would show outages street by street.</li>
+      </ul>
+    </section>
+  </div>
+
+  <div class="section-title">Market signals <span class="small muted">what Base is doing right now, from public sources</span></div>
+
+  <section class="card" id="permCard">
+    <div class="card-head">
+      <h2>Where Base is installing: Austin building permits</h2>
+      <a class="small" id="permSrc" href="https://data.austintexas.gov/Building-and-Development/Issued-Construction-Permits/3syk-w9eu" target="_blank" rel="noopener">City of Austin Open Data ↗</a>
+    </div>
+    <div id="permits"><p class="small muted">Loading permits…</p></div>
+  </section>
+
+  <div class="grid2">
+    <section class="card">
+      <h2>Ads running now</h2>
+      <p class="small muted">Opens the live ad libraries in a new tab. Meta and Google don't allow embedding, and US ad targeting
+        is only public for political ads, so read the location from the ad copy.</p>
+      <div class="adlinks">
+        <a class="adbtn main" target="_blank" rel="noopener" href="https://www.facebook.com/ads/library/?active_status=active&amp;ad_type=all&amp;country=US&amp;media_type=all&amp;q=%22Base%20Power%22&amp;search_type=keyword_exact_phrase">Base Power on Meta <span>Facebook · Instagram ↗</span></a>
+        <a class="adbtn main" target="_blank" rel="noopener" href="https://adstransparency.google.com/?region=US&amp;domain=basepowercompany.com">Base Power on Google <span>Search · YouTube · Display ↗</span></a>
+      </div>
+      <div class="lbl">Competitors on Meta</div>
+      <div class="adlinks small-links">
+        <a target="_blank" rel="noopener" href="https://www.facebook.com/ads/library/?active_status=active&amp;ad_type=all&amp;country=US&amp;media_type=all&amp;q=Generac&amp;search_type=keyword_unordered">Generac ↗</a>
+        <a target="_blank" rel="noopener" href="https://www.facebook.com/ads/library/?active_status=active&amp;ad_type=all&amp;country=US&amp;media_type=all&amp;q=Powerwall&amp;search_type=keyword_unordered">Tesla Powerwall ↗</a>
+        <a target="_blank" rel="noopener" href="https://www.facebook.com/ads/library/?active_status=active&amp;ad_type=all&amp;country=US&amp;media_type=all&amp;q=Enphase%20battery&amp;search_type=keyword_unordered">Enphase ↗</a>
+        <a target="_blank" rel="noopener" href="https://www.facebook.com/ads/library/?active_status=active&amp;ad_type=all&amp;country=US&amp;media_type=all&amp;q=FranklinWH&amp;search_type=keyword_unordered">FranklinWH ↗</a>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-head"><h2>In the news</h2><span class="small muted" id="newsMeta"></span></div>
+      <div id="news"><p class="small muted">Loading headlines…</p></div>
+    </section>
+  </div>
+</main>
+
+<footer>Generated from DOE EAGLE-I outages, NOAA Storm Events, FEMA National Risk Index, Census ACS, PUCT Power to Choose and ERCOT prices.
+  Message drafts are starting points to check against Base's brand and product claims. Not an official Base product.</footer>
+<div id="tip" class="tip" hidden></div>
+<script src="js/plan.js?v=20260926m"></script>
+</body>
+</html>

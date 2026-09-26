@@ -1,0 +1,91 @@
+/* Livewire BI marketing plan. Builds on rep.css (tokens, header, cards). */
+main { max-width: 1200px; }
+.nav { margin-left: auto; display: flex; gap: 18px; flex-wrap: wrap; }
+.controls { display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start; padding: 14px 22px; }
+.controls .lbl { font-size: 12px; font-weight: 600; color: var(--grey-80); margin-bottom: 4px; }
+.controls input[type=range] { width: 220px; accent-color: var(--grounded); }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.stat { background: #fff; border-radius: var(--r-card); box-shadow: var(--shadow); padding: 16px 18px; }
+.stat .v { font-size: 30px; font-weight: 600; color: var(--grounded); line-height: 1.1; }
+.stat .v.hot { color: var(--energy); }
+.stat .l { font-size: 12.5px; color: var(--grey-80); margin-top: 4px; }
+.section-title { font-size: 16px; font-weight: 600; color: var(--grounded); margin: 4px 4px 10px; }
+.section-title .small { font-weight: 400; margin-left: 8px; }
+
+.segs { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 16px; }
+.seg { border-top: 5px solid var(--c); display: flex; flex-direction: column; gap: 6px; padding: 18px 20px; }
+.seg-top { display: flex; justify-content: space-between; align-items: baseline; }
+.seg h3 { margin: 0; font-size: 17px; }
+.seg .effort { font-size: 22px; font-weight: 700; color: var(--c); }
+.seg .bar { height: 6px; background: var(--conduit); border-radius: 3px; overflow: hidden; }
+.seg .bar div { height: 100%; background: var(--c); }
+.seg .kv { font-size: 14px; }
+.seg .why { font-size: 13px; margin: 4px 0; }
+.seg dl { display: grid; grid-template-columns: 110px 1fr; gap: 3px 10px; margin: 0; font-size: 13px; }
+.seg dt { color: var(--grey-60); } .seg dd { margin: 0; }
+.seg .draft { background: var(--conduit); border-radius: 12px; padding: 10px 12px; margin-top: auto; font-size: 13px; }
+.seg .draft b { display: block; margin: 2px 0 4px; font-size: 14px; }
+
+.cal-wrap { overflow-x: auto; }
+.cal { min-width: 720px; display: flex; flex-direction: column; gap: 3px; margin-top: 6px; }
+.cal-row { display: grid; grid-template-columns: 150px repeat(12, 1fr); gap: 3px; align-items: stretch; }
+.cal-name { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.cal-cell { position: relative; height: 38px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+.cal-row.head .cal-cell { height: 20px; color: var(--grey-60); font-weight: 600; background: none; }
+.cal-row.head .cal-cell.now { color: var(--energy); }
+.cal-cell i { font-style: normal; font-weight: 600; }
+.cal-row.hooks .cal-name { color: var(--grey-60); font-weight: 500; }
+.cal-cell.hook { background: var(--conduit); height: 28px; }
+.cal-cell.hook span { font-size: 10.5px; font-weight: 600; color: var(--orange-90); }
+.mark { font-size: 11px; line-height: 1; }
+.cal-cell .mark { position: absolute; top: 2px; }
+.cal-cell .mark.launch { left: 4px; color: var(--energy); }
+.cal-cell .mark.anniv { right: 4px; color: #F2B705; }
+.legend-row .mark.launch { color: var(--energy); } .legend-row .mark.anniv { color: #F2B705; }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; flex: none; }
+
+.table-wrap { overflow-x: auto; }
+#targets th { font-weight: 500; color: var(--grey-60); font-size: 11px; text-transform: uppercase; letter-spacing: .4px;
+  border-bottom: 1px solid var(--grey-20); white-space: nowrap; }
+#targets th, #targets td { text-align: left; } #targets .n { text-align: right; }
+#targets a { color: var(--grounded); font-weight: 600; }
+.grp { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: var(--r-pill); background: var(--green-5); color: var(--grounded); }
+.grp.hold { background: var(--conduit); color: var(--grey-80); }
+.more { margin-top: 10px; }
+
+.perm-top { display: grid; grid-template-columns: 1.3fr 1fr; gap: 24px; align-items: start; }
+.perm-stats { display: flex; gap: 22px; flex-wrap: wrap; margin: 4px 0 10px; }
+.perm-stats div b { display: block; font-size: 24px; color: var(--grounded); line-height: 1.1; }
+.perm-stats div span { font-size: 12px; color: var(--grey-80); }
+.perm-stats .hot b { color: var(--energy); }
+.insight { background: var(--green-5); border-radius: 12px; padding: 10px 14px; font-size: 13.5px; margin: 10px 0 4px; }
+.insight.warn { background: var(--orange-5); }
+.insight button { margin-left: 6px; }
+#permChart svg { display: block; width: 100%; height: auto; }
+#permChart .b { fill: var(--grounded); } #permChart .b.cur { fill: var(--green-60); }
+#permChart text { font: 11px var(--font); fill: var(--grey-60); } #permChart .v { fill: var(--terminal); font-weight: 600; }
+#permZips th { font-weight: 500; color: var(--grey-60); font-size: 11px; text-transform: uppercase; letter-spacing: .4px; border-bottom: 1px solid var(--grey-20); }
+#permZips a { color: var(--grounded); font-weight: 600; }
+.adlinks { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0 14px; }
+.adbtn { flex: 1 1 200px; display: block; text-decoration: none; background: var(--grounded); color: #fff; font-weight: 600; font-size: 14px;
+  border-radius: 12px; padding: 12px 14px; }
+.adbtn span { display: block; font-weight: 400; font-size: 12px; opacity: .8; margin-top: 2px; }
+.adbtn:hover { background: #2a6a3b; }
+.small-links a { font-size: 13px; font-weight: 600; color: var(--grounded); background: var(--conduit); padding: 6px 12px; border-radius: var(--r-pill); text-decoration: none; }
+.small-links a:hover { background: var(--green-5); }
+.lbl { font-size: 12px; font-weight: 600; color: var(--grey-80); }
+.news-item { padding: 10px 0; border-bottom: 1px solid #f1f0ee; }
+.news-item:last-child { border-bottom: 0; }
+.news-item a { color: var(--terminal); font-weight: 600; text-decoration: none; font-size: 14px; }
+.news-item a:hover { color: var(--grounded); text-decoration: underline; }
+.news-item .meta { font-size: 11.5px; color: var(--grey-60); margin-bottom: 2px; }
+.news-item p { margin: 3px 0 0; font-size: 12.5px; color: var(--grey-80); }
+
+@media (max-width: 760px) {
+  .perm-top { grid-template-columns: 1fr; }
+  .stats { grid-template-columns: 1fr 1fr; }
+  .nav { margin-left: 0; gap: 14px; }
+  .grid2 { grid-template-columns: 1fr; }
+  .controls { gap: 16px; }
+}
+#permSrc { color: var(--grounded); font-weight: 600; }

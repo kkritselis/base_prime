@@ -54,7 +54,7 @@ if (!file_exists($csvPath)) {
   unset($o);
   if (!$rows) $err = 'No ZIPs with map points - re-run build_scores.py (it adds lat/lon).';
 }
-$v = '20260926l';   // bump to bust browser/host caches after editing css/ or js/
+$v = '20260926n';   // bump to bust browser/host caches after editing css/ or js/
 $updated = file_exists($csvPath) ? date('M j, Y g:ia', filemtime($csvPath)) : '';
 ?><!doctype html>
 <html lang="en">
@@ -65,19 +65,25 @@ $updated = file_exists($csvPath) ? date('M j, Y g:ia', filemtime($csvPath)) : ''
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Zilla+Slab:wght@700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="icon" type="image/png" href="favicon.png">
 <link rel="stylesheet" href="css/map.css?v=<?= $v ?>">
 </head>
 <body>
 <header>
-  <div>
-    <div class="eyebrow">Built for Base Power × AITX Hackathon</div>
-    <h1>Livewire BI: "Where Texas needs backup next."</h1>
+  <div class="brand">
+    <img src="logo-light.png" alt="Livewire BI" class="logo" width="397" height="96">
+    <div>
+      <div class="eyebrow">Built for Base Power × AITX Hackathon</div>
+      <h1>Where Texas needs backup next.</h1>
+    </div>
   </div>
   <div class="spacer"></div>
   <a href="events.html" class="hdr-link long">Statewide events →</a>
   <a href="events.html" class="hdr-link short">Events →</a>
-  <a href="rep.html" target="_blank" class="hdr-link long">Sales call view →</a>
-  <a href="rep.html" class="hdr-link short">Sales view →</a>
+  <a href="rep.html" target="_blank" class="hdr-link long">Sales View →</a>
+  <a href="rep.html" class="hdr-link short">Sales →</a>
+  <a href="plan.html" class="hdr-link long">Marketing plan →</a>
+  <a href="plan.html" class="hdr-link short">Plan →</a>
   <div class="seg" role="tablist" aria-label="Market">
     <button id="mBase" class="on" title="Only utilities checked in the By utility tab (default: Base's market today)">Selected utilities</button>
     <button id="mAll">All of Texas</button>
