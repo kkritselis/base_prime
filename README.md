@@ -1,7 +1,7 @@
 <h1>
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="logo-light.png">
-    <img src="logo.png" alt="Livewire BI" width="400">
+    <img src="logo-light.png" alt="Livewire BI" width="400">
   </picture>
 </h1>
 
