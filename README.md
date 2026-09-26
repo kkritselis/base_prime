@@ -1,5 +1,7 @@
 # Livewire BI
 
+![Livewire BI: the map, the sales call view and the statewide events page](interface.png)
+
 **Where Texas needs home backup next.** Livewire BI is a business-intelligence tool for Base Power. It ranks every Texas
 ZIP code by how much it needs, and can buy, whole-home battery backup. It also shows which utility serves each area and
 gives sales and marketing teams the outage story for any ZIP.
@@ -70,10 +72,10 @@ are adjustable in the app.
 
 | Part | Signals |
 |---|---|
-| **Need** | Outage hours per home and notable-outage days (DOE EAGLE-I, 2018–2025); FEMA risk for hurricane, ice storm, winter weather, wind, tornado, cold and heat waves; share of all-electric homes (they lose heat in a winter outage) |
+| **Need** | Outage hours per home, notable-outage days and restoration time after major outages (DOE EAGLE-I, 2018–2025); FEMA risk for hurricane, ice storm, winter weather, wind, tornado, cold and heat waves; share of all-electric homes (they lose heat in a winter outage) |
 | **Value to Base** | Home size (median rooms), home value, electric load |
 | **Ability & Ease** | Household income, homeownership, long-term owners (Base plans run 36 months), new single-family construction |
-| **Good-fit filter** | 500+ residents, 40%+ owner-occupied, 50%+ single-family |
+| **Owned-homes filter** (always on) | 500+ residents, 40%+ owner-occupied, 50%+ single-family; other ZIPs (mostly renters/apartments) are greyed out |
 | **Market** | Wires company per ZIP from the state's Power to Choose site; co-op / city / non-ERCOT utility from EIA-861 |
 
 Missing data re-weights the other signals instead of counting as zero. Cutoffs live at the top of `build_scores.py`.
@@ -89,6 +91,7 @@ fetch_extra.py     FEMA National Risk Index (county + census tract → ZIP), ext
 fetch_utility.py   Power to Choose (every Texas ZIP) + EIA-861 via NREL → utility and market per ZIP, local prices
 fetch_shapes.py    Census TIGERweb → simplified ZIP and county boundaries (GeoJSON)
 fetch_events.py    NOAA Storm Events → cause of every notable county outage day; statewide events (grid-wide vs local)
+fetch_duration.py  restoration time after major outages (5%+ of a county out) and average outage length, per county
 build_scores.py    joins everything → data/tx_zip_final.csv (+ map points) and data/tx_utility_summary.csv
 ```
 
@@ -100,6 +103,7 @@ python fetch_extra.py       # can run alongside fetch_data.py
 python fetch_utility.py     # ~2,300 Power to Choose lookups, ~5–10 min, resumable
 python fetch_shapes.py      # ~1–3 min
 python fetch_events.py      # after fetch_data.py; downloads ~90 MB of NOAA files once
+python fetch_duration.py    # after fetch_data.py; ~2–4 min, no downloads
 python build_scores.py      # seconds
 php -S localhost:8000       # open http://localhost:8000
 ```
@@ -146,6 +150,9 @@ DESIGN.md            Base brand tokens used for styling
 - Outage causes come from matching dates to NOAA reports. A day is attributed to a storm reported in that county
   (±1 day), a storm's restoration tail (up to 14 days), or the day's dominant regional storm. Four widely reported
   unnamed events (Houston derecho, Memorial Day storms, Central Texas ice storm, Dallas windstorm) are named by date.
+- Restoration time = hours from the peak of a major outage (5%+ of a county's customers, min. 500) until 90% are back on.
+  Some counties have only 10–20 such events, so treat exact county values as rough; the regional pattern (slowest on the
+  Gulf Coast and in East Texas, fastest in open West Texas) is the reliable part.
 - A "notable outage day" means 2%+ of a county's customers were out at once, usually a small area for a few hours.
 - Utility per ZIP comes from one Power to Choose lookup; ZIPs on a service boundary can be split in reality.
 - Scores rank ZIPs against each other. They're a targeting aid, not a sales forecast. Campaign briefs are drafts to be
