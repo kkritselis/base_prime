@@ -195,11 +195,11 @@ function exportLeads() {
     download(`livewire-leads_zips_${view}_${stamp}.csv`, [[note], [
       'rank', 'zip', 'county', 'utility', 'market', 'utility_selected', 'demand_score', 'need', 'value', 'ability',
       'owner_occupied_single_family_homes', 'median_income', 'owner_rate', 'single_family_rate', 'electric_heat_share', 'outage_hours_per_home_yr',
-      'notable_outage_days_yr', 'typical_restore_hours_major', 'avg_outage_length_hours', 'top_outage_cause', 'peak_outage_season', 'worst_event', 'why_this_zip', 'sales_view_link'],
+      'notable_outage_days_yr', 'typical_restore_hours_major', 'avg_outage_length_hours', 'ercot_zone', 'battery_grid_value_usd_per_kw_yr', 'top_outage_cause', 'peak_outage_season', 'worst_event', 'why_this_zip', 'sales_view_link'],
       ...rows.map((r, i) => [i + 1, r.zip, r.county_name.replace(/ County$/, ''), r.utility, label(r.market), isSel(r) ? 'yes' : 'no',
         r._s == null ? '' : r._s.toFixed(1), r.need_score?.toFixed(0), r.value_score?.toFixed(0), r.ability_score?.toFixed(0),
         r.addressable_homes, r.median_hh_income, r.owner_rate, r.single_family_rate, r.electric_heat,
-        r.outage_hours?.toFixed(1), r.event_days?.toFixed(0), r.restore_hours?.toFixed(0), r.avg_outage_length?.toFixed(1), r.top_cause, r.peak_season, r.worst_event,
+        r.outage_hours?.toFixed(1), r.event_days?.toFixed(0), r.restore_hours?.toFixed(0), r.avg_outage_length?.toFixed(1), r.ercot_zone, r.grid_value?.toFixed(1), r.top_cause, r.peak_season, r.worst_event,
         r.top_reasons, base + 'rep.html?zip=' + r.zip])]);
   } else {
     const list = utilityRollup(candidates());   // all utilities, with a 'selected' column
@@ -260,6 +260,7 @@ function renderDetail(r) {
       <div><span title="Days per year when at least 2% of the county's customers (min. 100) were out at the same time">Days with a notable outage / yr*</span><b>${r.event_days == null ? '–' : r.event_days.toFixed(0)}</b></div>
       <div><span title="Median hours from the peak of a major outage (1%+ of the county out) until 90% of those customers had power back">Typical restore time, major outages*</span><b>${r.restore_hours == null ? '–' : r.restore_hours.toFixed(0) + ' h'}</b></div>
       <div><span title="Estimated average length of an outage for an affected customer">Avg outage length*</span><b>${r.avg_outage_length == null ? '–' : r.avg_outage_length.toFixed(1) + ' h'}</b></div>
+      <div><span title="What a 2-hour home battery could earn per kW per year from daily price swings in this ERCOT load zone (typical year, excluding Uri). Zone is approximated from the utility and location.">Battery grid value${r.ercot_zone ? ' (' + r.ercot_zone.replace('LZ_', '').replace('AEN', 'Austin').replace('CPS', 'San Antonio').toLowerCase().replace(/^./, c => c.toUpperCase()) + ' zone)' : ''}</span><b>${r.grid_value == null ? '–' : '$' + Math.round(r.grid_value) + '/kW-yr'}</b></div>
       <div><span>Electric heat</span><b>${pct(r.electric_heat)}</b></div>
       <div><span>Median rooms</span><b>${r.rooms == null ? '–' : r.rooms.toFixed(1)}</b></div>
       <div><span>${price[0]}</span><b>${price[1]}</b></div>

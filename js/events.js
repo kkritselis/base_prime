@@ -2,7 +2,7 @@
 // Data (from the pipeline): data/tx_statewide_daily.csv (fetch_data.py), data/tx_statewide_events.csv and
 // data/tx_statewide_causes.csv (fetch_events.py).
 (() => {
-  const VERSION = '2026-09-26h (events page)';
+  const VERSION = '2026-09-26l (events + ERCOT zones)';
   const log = (...a) => console.log('%c[Livewire]', 'color:#1E4D2B;font-weight:bold', ...a);
   log('events.js loaded, version', VERSION);
   const $ = id => document.getElementById(id);
@@ -39,8 +39,10 @@
 
   let daily = [], events = [], causes = [], scale = 'log', filter = 'all', selected = null, showAll = false;
 
-  Promise.all([get('data/tx_statewide_daily.csv'), get('data/tx_statewide_events.csv'), get('data/tx_statewide_causes.csv')])
-    .then(([d, e, c]) => {
+  Promise.all([get('data/tx_statewide_daily.csv'), get('data/tx_statewide_events.csv'), get('data/tx_statewide_causes.csv'),
+               get('data/ercot_zone_value.csv')])
+    .then(([d, e, c, z]) => {
+      renderZones(z);
       daily = d.map(r => ({ date: r.date, v: +r.peak_customers_out || 0 })).filter(r => r.date >= '2018-01-01').sort((a, b) => a.date < b.date ? -1 : 1);
       events = e.map(r => {
         const grid = /GRID/.test(r.type);
@@ -148,6 +150,23 @@
       tip.hidden = false; tip.style.left = (ev.clientX + 14) + 'px'; tip.style.top = (ev.clientY + 14) + 'px';
     });
     hit.addEventListener('mouseleave', () => { tip.hidden = true; cross.setAttribute('visibility', 'hidden'); });
+  }
+
+  // ---------- ERCOT zones ----------
+  const ZNAME = { LZ_HOUSTON: 'Houston', LZ_NORTH: 'North (Dallas–Fort Worth)', LZ_SOUTH: 'South (Corpus / Valley)', LZ_WEST: 'West',
+    LZ_AEN: 'Austin Energy', LZ_CPS: 'CPS (San Antonio)', LZ_LCRA: 'LCRA (Central TX)', LZ_RAYBN: 'Rayburn (NE TX)' };
+  function renderZones(z) {
+    const el = $('zones');
+    if (!z.length) { $('gridCard').hidden = true; return; }
+    const rows = z.map(r => ({ zone: r.zone, typ: +r.typical_year_usd_per_kw || 0, uri: +r.uri_2021_usd_per_kw || 0,
+      spikes: +r.spike_intervals_per_year_typical || 0 })).sort((a, b) => b.typ - a.typ);
+    const maxT = Math.max(...rows.map(r => r.typ), 1);
+    el.innerHTML = '<table class="zt"><tr><th>Load zone</th><th>Typical year</th><th class="n">$/kW-yr</th><th class="n">2021 (Uri)</th><th class="n">Price spikes/yr*</th></tr>' +
+      rows.map(r => `<tr><td>${esc(ZNAME[r.zone] || r.zone)}</td>
+        <td><div class="zbar"><div style="width:${Math.round(100 * r.typ / maxT)}%"></div></div></td>
+        <td class="n"><b>$${r.typ.toFixed(0)}</b></td><td class="n">$${fmt(r.uri)}</td><td class="n">${fmt(r.spikes)}</td></tr>`).join('') +
+      '</table><p class="small muted">* 15-minute intervals at $1,000/MWh or more, typical year. Each ZIP on the map is assigned a zone from its utility and location; ' +
+      'the zone\'s typical-year value feeds the "Value to Base" score.</p>';
   }
 
   // ---------- causes ----------

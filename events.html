@@ -6,8 +6,8 @@
 <title>Livewire BI: Texas outage events 2018–2025</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Zilla+Slab:wght@700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/rep.css?v=20260926h">
-<link rel="stylesheet" href="css/events.css?v=20260926h">
+<link rel="stylesheet" href="css/rep.css?v=20260926l">
+<link rel="stylesheet" href="css/events.css?v=20260926l">
 </head>
 <body>
 <header>
@@ -57,6 +57,17 @@
     </section>
   </div>
 
+  <section class="card" id="gridCard">
+    <div class="card-head">
+      <h2>Battery grid value by ERCOT zone</h2>
+      <span class="small muted">ERCOT real-time prices, 15-minute, 2018–2025</span>
+    </div>
+    <p class="small">Base earns from the grid when prices spike. This is what a 2-hour home battery could earn per kW each year by
+      charging in each day's cheapest 2 hours and discharging in the most expensive 2 (85% round-trip efficiency), in a
+      <b>typical year</b> (excluding 2021) and in <b>2021</b> (Winter Storm Uri).</p>
+    <div id="zones"></div>
+  </section>
+
   <section class="card">
     <div class="card-head">
       <h2>Every major outage event</h2>
@@ -72,6 +83,6 @@
 
 <footer>Outages: DOE EAGLE-I (ORNL, CC BY 4.0) · causes: NOAA Storm Events · event names for unnamed storms added from news coverage. Not an official Base product.</footer>
 <div id="tip" class="tip" hidden></div>
-<script src="js/events.js?v=20260926h"></script>
+<script src="js/events.js?v=20260926l"></script>
 </body>
 </html>

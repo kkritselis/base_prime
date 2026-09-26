@@ -30,6 +30,7 @@ DATA = os.path.join(HERE, "data")
 WEIGHTS = {"need": 0.40, "value": 0.30, "ability": 0.30}
 NEED = {"outage_hours": 0.30, "event_days": 0.10, "restore_hours": 0.15, "weather_hazard": 0.30, "electric_heat": 0.15}
 VALUE = {"rooms": 0.50, "home_value": 0.30, "electric_heat": 0.20}
+GRID_NUDGE = 0.25   # battery grid value shifts Value up/down from the typical ERCOT zone (0 = typical zone, no change)
 ABILITY = {"income": 0.40, "owner_rate": 0.30, "stability": 0.15, "growth": 0.15}
 # FEMA NRI hazards that cause outages (scores are 0-100 national percentiles)
 OUTAGE_HAZARDS = ["hurricane", "ice_storm", "winter_weather", "strong_wind", "cold_wave", "heat_wave", "tornado"]
@@ -95,17 +96,34 @@ def wavg(parts, weights):
 
 LABELS = {
     "outage_hours": "outage hours per customer", "event_days": "major outage days",
-    "restore_hours": "slow power restoration",
+    "restore_hours": "slow power restoration", "grid_value": "battery grid value (ERCOT zone)",
     "weather_hazard": "severe-weather risk (FEMA)", "electric_heat": "all-electric heating",
     "rooms": "home size", "home_value": "home value", "income": "household income",
     "owner_rate": "homeownership", "stability": "long-term owners", "growth": "new-home growth",
 }
+
+def ercot_zone(utility, market, lat, lon):
+    """Approximate ERCOT load zone for a ZIP from its wires company / utility and location."""
+    u = (utility or "").upper()
+    if market == "ioi_non_ercot" or lat is None: return ""
+    if "CENTERPOINT" in u: return "LZ_HOUSTON"
+    if "AEP TEXAS CENTRAL" in u: return "LZ_SOUTH"
+    if "AEP TEXAS NORTH" in u: return "LZ_WEST"
+    if "AUSTIN ENERGY" in u: return "LZ_AEN"
+    if "SAN ANTONIO" in u: return "LZ_CPS"
+    if lon < -100.5: return "LZ_WEST"
+    if "TEXAS-NEW MEXICO" in u and lat < 30.2 and lon > -96: return "LZ_HOUSTON"
+    if "ONCOR" in u or "TEXAS-NEW MEXICO" in u: return "LZ_NORTH"
+    if lat < 29.9 and lon > -96.3: return "LZ_HOUSTON"      # co-ops / cities: nearest competitive zone by location
+    if lat < 30.0: return "LZ_SOUTH"
+    return "LZ_NORTH"
 
 def main():
     prof = load("tx_zip_profile.csv", "zip")
     extra = load("tx_zip_extra.csv", "zip")
     outage = load("tx_county_outage_summary.csv", "county_fips")
     dur = load("tx_county_duration.csv", "county_fips")      # fetch_duration.py (optional)
+    zval = load("ercot_zone_value.csv", "zone")               # fetch_ercot.py (optional)
     util = load("tx_zip_utility.csv", "zip")
     pts = zip_points()
     if not prof:
@@ -140,15 +158,28 @@ def main():
             **{h + "_score": num(e.get(h + "_score")) for h in OUTAGE_HAZARDS},
         })
 
-    metrics = {"outage_hours", "event_days", "restore_hours", "weather_hazard", "electric_heat", "rooms",
+    for r in rows:                                            # ERCOT zone + battery grid value ($/kW-yr, typical year)
+        u = util.get(r["zip"], {})
+        r["ercot_zone"] = ercot_zone(u.get("utility"), u.get("market"), r["lat"], r["lon"])
+        r["grid_value"] = num(zval.get(r["ercot_zone"], {}).get("typical_year_usd_per_kw")) if r["ercot_zone"] else None
+
+    metrics = {"outage_hours", "event_days", "restore_hours", "grid_value", "weather_hazard", "electric_heat", "rooms",
                "home_value", "income", "owner_rate", "stability", "growth"}
     src = {"home_value": "median_home_value", "income": "median_hh_income"}
     rankers = {m: pct_ranker([r[src.get(m, m)] for r in rows]) for m in metrics}
+    # Grid value has only ~8 distinct zone values a few dollars apart, so a percentile would exaggerate tiny gaps.
+    # Score it in proportion to dollars instead: the median zone = 50, a zone worth 10% more = 55 (capped 0-100).
+    gv = sorted(r["grid_value"] for r in rows if r["grid_value"] is not None)
+    if gv:
+        gmed = gv[len(gv) // 2]
+        rankers["grid_value"] = lambda v: None if v is None else max(0.0, min(100.0, 50.0 * v / gmed))
 
     for r in rows:
         pr = {m: rankers[m](r[src.get(m, m)]) for m in metrics}
         r["need_score"] = wavg(pr, NEED)
         r["value_score"] = wavg(pr, VALUE)
+        if r["value_score"] is not None and pr.get("grid_value") is not None:   # typical zone = 50 -> no change
+            r["value_score"] = max(0.0, min(100.0, r["value_score"] + GRID_NUDGE * (pr["grid_value"] - 50)))
         r["ability_score"] = wavg(pr, ABILITY)
         subs = {"need": r["need_score"], "value": r["value_score"], "ability": r["ability_score"]}
         total = wavg(subs, WEIGHTS)
@@ -194,7 +225,8 @@ def main():
               "resilience_demand_score", "need_score", "value_score", "ability_score", "top_reasons",
               "addressable_homes", "population", "median_hh_income", "owner_rate", "single_family_rate",
               "median_home_value", "rooms", "electric_heat", "outage_hours", "event_days", "restore_hours",
-              "avg_outage_length", "major_outages", "longest_restore_hours", "longest_restore_start", "weather_hazard",
+              "avg_outage_length", "major_outages", "longest_restore_hours", "longest_restore_start", "ercot_zone", "grid_value",
+              "weather_hazard",
               "fema_risk_score"] + [h + "_score" for h in OUTAGE_HAZARDS] + ["stability", "growth"]
     out = os.path.join(DATA, "tx_zip_final.csv")
     with open(out, "w", newline="", encoding="utf-8") as f:

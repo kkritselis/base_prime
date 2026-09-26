@@ -64,6 +64,8 @@ For a rep on the phone with a homeowner:
   local ones are green.
 - Cause breakdown, "What this means for Base" takeaways, and a filterable table of all 88 events. Clicking a row
   highlights the event on the chart.
+- **Battery grid value by ERCOT zone:** typical-year and 2021 (Uri) earnings per kW for a home battery, plus price
+  spikes per year, from ERCOT's own settlement prices.
 
 ## How the score works
 
@@ -73,7 +75,7 @@ are adjustable in the app.
 | Part | Signals |
 |---|---|
 | **Need** | Outage hours per home, notable-outage days and restoration time after major outages (DOE EAGLE-I, 2018–2025); FEMA risk for hurricane, ice storm, winter weather, wind, tornado, cold and heat waves; share of all-electric homes (they lose heat in a winter outage) |
-| **Value to Base** | Home size (median rooms), home value, electric load |
+| **Value to Base** | Home size (median rooms), home value, electric load. Then a **battery grid value** nudge: what a 2-hour battery earns per kW-year from daily price swings in the ZIP's ERCOT load zone (15-minute real-time prices, 2018–2025, typical year excluding Uri). Zones worth more than the typical zone move Value up (West Texas about +3.5 points), cheaper ones move it down slightly; non-ERCOT ZIPs are unchanged |
 | **Ability & Ease** | Household income, homeownership, long-term owners (Base plans run 36 months), new single-family construction |
 | **Owned-homes filter** (always on) | 500+ residents, 40%+ owner-occupied, 50%+ single-family; other ZIPs (mostly renters/apartments) are greyed out |
 | **Market** | Wires company per ZIP from the state's Power to Choose site; co-op / city / non-ERCOT utility from EIA-861 |
@@ -92,6 +94,7 @@ fetch_utility.py   Power to Choose (every Texas ZIP) + EIA-861 via NREL → util
 fetch_shapes.py    Census TIGERweb → simplified ZIP and county boundaries (GeoJSON)
 fetch_events.py    NOAA Storm Events → cause of every notable county outage day; statewide events (grid-wide vs local)
 fetch_duration.py  restoration time after major outages (5%+ of a county out) and average outage length, per county
+fetch_ercot.py     ERCOT real-time load-zone prices (report 13061) → battery arbitrage value and price spikes per zone
 build_scores.py    joins everything → data/tx_zip_final.csv (+ map points) and data/tx_utility_summary.csv
 ```
 
@@ -104,6 +107,7 @@ python fetch_utility.py     # ~2,300 Power to Choose lookups, ~5–10 min, resum
 python fetch_shapes.py      # ~1–3 min
 python fetch_events.py      # after fetch_data.py; downloads ~90 MB of NOAA files once
 python fetch_duration.py    # after fetch_data.py; ~2–4 min, no downloads
+python fetch_ercot.py       # downloads ~100 MB of ERCOT price files once; ~3–6 min to parse
 python build_scores.py      # seconds
 php -S localhost:8000       # open http://localhost:8000
 ```
@@ -139,6 +143,7 @@ DESIGN.md            Base brand tokens used for styling
 - **FEMA National Risk Index** (Dec 2025), counties and census tracts
 - **U.S. Census Bureau:** ACS 2020–2024 5-year, 2020 ZIP (ZCTA) relationship files and Gazetteer, TIGERweb boundaries,
   Building Permits Survey 2022–2024
+- **ERCOT** Historical RTM Load Zone and Hub Prices (report 13061), 15-minute settlement point prices, 2018–2025
 - **PUCT Power to Choose:** open-market plans and wires company per ZIP
 - **DOE/NREL Utility Rates by ZIP (2024)**, from EIA Form 861
 - Basemap © OpenStreetMap contributors © CARTO
@@ -154,13 +159,16 @@ DESIGN.md            Base brand tokens used for styling
   Some counties have only 10–20 such events, so treat exact county values as rough; the regional pattern (slowest on the
   Gulf Coast and in East Texas, fastest in open West Texas) is the reliable part.
 - A "notable outage day" means 2%+ of a county's customers were out at once, usually a small area for a few hours.
+- Each ZIP's ERCOT load zone is approximated from its utility and location (Houston = CenterPoint, Austin Energy and CPS
+  are their own zones, and so on); non-ERCOT areas get no grid value. The arbitrage figure is a simple proxy (perfect
+  foresight of each day's cheapest and priciest 2 hours), not Base's actual dispatch revenue.
 - Utility per ZIP comes from one Power to Choose lookup; ZIPs on a service boundary can be split in reality.
 - Scores rank ZIPs against each other. They're a targeting aid, not a sales forecast. Campaign briefs are drafts to be
   checked against Base's brand and product claims.
 
 ## Next steps
 
-- Battery grid value: add ERCOT load-zone price volatility to "Value to Base" (batteries in spikier zones earn more)
+- Nodal (bus-level) prices instead of load zones for finer grid value
 - Stack monthly outage hours by cause in the sales view
 - ZIP-level outage data where utilities publish it
 

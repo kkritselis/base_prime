@@ -5,9 +5,9 @@ $csvPath = __DIR__ . '/data/tx_zip_final.csv';
 $keep = ['zip','lat','lon','county_fips','county_name','longest_restore_start','serviceable','home_fit','base_market','utility','utility_type','market',
   'not_serviceable_reason','resilience_demand_score','need_score','value_score','ability_score','top_reasons',
   'addressable_homes','population','median_hh_income','owner_rate','single_family_rate','median_home_value','rooms',
-  'electric_heat','outage_hours','event_days','restore_hours','avg_outage_length','major_outages','longest_restore_hours','weather_hazard','hurricane_score','ice_storm_score','winter_weather_score',
+  'electric_heat','outage_hours','event_days','restore_hours','avg_outage_length','grid_value','ercot_zone','major_outages','longest_restore_hours','weather_hazard','hurricane_score','ice_storm_score','winter_weather_score',
   'strong_wind_score','cold_wave_score','heat_wave_score','tornado_score','ptc_median_1000kwh','res_rate','growth'];
-$text = ['zip','county_fips','county_name','longest_restore_start','serviceable','home_fit','base_market','utility','utility_type','market','not_serviceable_reason','top_reasons'];
+$text = ['zip','county_fips','county_name','longest_restore_start','ercot_zone','serviceable','home_fit','base_market','utility','utility_type','market','not_serviceable_reason','top_reasons'];
 $rows = []; $err = '';
 if (!file_exists($csvPath)) {
   $err = 'data/tx_zip_final.csv not found - run: python build_scores.py';
@@ -54,7 +54,7 @@ if (!file_exists($csvPath)) {
   unset($o);
   if (!$rows) $err = 'No ZIPs with map points - re-run build_scores.py (it adds lat/lon).';
 }
-$v = '20260926k';   // bump to bust browser/host caches after editing css/ or js/
+$v = '20260926l';   // bump to bust browser/host caches after editing css/ or js/
 $updated = file_exists($csvPath) ? date('M j, Y g:ia', filemtime($csvPath)) : '';
 ?><!doctype html>
 <html lang="en">

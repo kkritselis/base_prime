@@ -31,3 +31,9 @@ main { max-width: 1200px; }
   .stats { grid-template-columns: 1fr 1fr; }
   .nav { margin-left: 0; }
 }
+table.zt { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 6px; }
+table.zt th { text-align: left; font-weight: 500; color: var(--grey-60); font-size: 11px; text-transform: uppercase; letter-spacing: .4px; border-bottom: 1px solid var(--grey-20); }
+table.zt td { text-align: left; } table.zt td.n, table.zt th.n { text-align: right; }
+table.zt td:nth-child(2) { width: 38%; }
+.zbar { height: 10px; background: var(--conduit); border-radius: 4px; overflow: hidden; }
+.zbar div { height: 100%; background: var(--grounded); border-radius: 4px; }
