@@ -1,0 +1,27 @@
+# --- Raw downloads (several GB; GitHub rejects files > 100 MB) ---
+# Rebuild with: python fetch_data.py && python fetch_extra.py && python fetch_utility.py && python build_scores.py
+data/raw/
+*.part
+
+# --- Large processed file (can exceed 100 MB with all years). Remove this line if yours is small enough. ---
+data/tx_county_outage_days.csv
+
+# --- Python ---
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# --- Secrets / local config (FTP creds, API keys) ---
+.env
+*.env
+sftp-config.json
+.ftpconfig
+
+# --- OS / editor clutter ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
