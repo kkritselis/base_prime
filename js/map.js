@@ -1,155 +1,7 @@
-<?php
-// Livewire - reads data/tx_zip_final.csv (from build_scores.py) and renders a Leaflet map.
-// Run locally from the project folder:   php -S localhost:8000     then open http://localhost:8000
-$csvPath = __DIR__ . '/data/tx_zip_final.csv';
-$keep = ['zip','lat','lon','county_name','serviceable','home_fit','base_market','utility','utility_type','market',
-  'not_serviceable_reason','resilience_demand_score','need_score','value_score','ability_score','top_reasons',
-  'addressable_homes','population','median_hh_income','owner_rate','single_family_rate','median_home_value','rooms',
-  'electric_heat','outage_hours','event_days','weather_hazard','hurricane_score','ice_storm_score','winter_weather_score',
-  'strong_wind_score','cold_wave_score','heat_wave_score','tornado_score','ptc_median_1000kwh','res_rate','growth'];
-$text = ['zip','county_name','serviceable','home_fit','base_market','utility','utility_type','market','not_serviceable_reason','top_reasons'];
-$rows = []; $err = '';
-if (!file_exists($csvPath)) {
-  $err = 'data/tx_zip_final.csv not found - run: python build_scores.py';
-} else {
-  $fh = fopen($csvPath, 'r');
-  $hdr = fgetcsv($fh, 0, ',', '"', '');
-  while (($r = fgetcsv($fh, 0, ',', '"', '')) !== false) {
-    if (count($r) !== count($hdr)) continue;
-    $a = array_combine($hdr, $r); $o = [];
-    foreach ($keep as $k) {
-      $v = $a[$k] ?? '';
-      $o[$k] = in_array($k, $text) ? $v : ($v === '' ? null : $v + 0);
-    }
-    if ($o['lat'] !== null) $rows[] = $o;
-  }
-  fclose($fh);
-  if (!$rows) $err = 'No ZIPs with map points - re-run build_scores.py (it adds lat/lon).';
-}
-$updated = file_exists($csvPath) ? date('M j, Y g:ia', filemtime($csvPath)) : '';
-?><!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Livewire: Where Texas needs backup next</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Zilla+Slab:wght@700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<style>
-:root{
-  --terminal:#292826; --grey-80:#54524F; --grey-60:#7F7D7A; --grey-40:#A9A8A7; --grey-20:#D8D7D5; --conduit:#F0EEEB;
-  --grounded:#1E4D2B; --green-100:#102A17; --green-60:#77A45A; --livewire:#B2DD79; --green-5:#D6F0B4;
-  --energy:#ED6C30; --goldenrod:#F7C33C; --white:#fff;
-  --font:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; --display:"Zilla Slab",Georgia,serif;
-  --r-md:8px; --r-card:20px; --r-pill:9999px; --shadow:0 2px 8px rgba(0,0,0,.08);
-}
-*{box-sizing:border-box}
-html,body{margin:0;height:100%}
-body{background:var(--conduit);color:var(--terminal);font:400 14px/1.5 var(--font);letter-spacing:.2px;display:flex;flex-direction:column}
-header{background:var(--grounded);color:#fff;padding:12px 20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
-.eyebrow{font:700 11px/1 var(--display);letter-spacing:.6px;text-transform:uppercase;color:var(--livewire)}
-h1{font-size:20px;font-weight:600;margin:4px 0 0;letter-spacing:0}
-.spacer{flex:1}
-.seg{display:inline-flex;background:rgba(255,255,255,.12);border-radius:var(--r-pill);padding:3px}
-.seg button{border:0;background:transparent;color:#fff;font:600 13px var(--font);padding:7px 14px;border-radius:var(--r-pill);cursor:pointer}
-.seg button.on{background:var(--livewire);color:var(--grounded)}
-.ctl{display:flex;align-items:center;gap:8px;font-size:13px}
-.ctl input[type=range]{accent-color:var(--livewire);width:110px}
-main{flex:1;display:flex;min-height:0}
-aside{width:380px;flex:none;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
-#map{flex:1;min-height:300px}
-.card{background:#fff;border-radius:var(--r-card);box-shadow:var(--shadow);padding:16px}
-.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.kpi .v{font-size:22px;font-weight:600;color:var(--grounded);line-height:1.1}
-.kpi .l{font-size:11px;color:var(--grey-60);text-transform:uppercase;letter-spacing:.48px;font-weight:500}
-.tabs{display:flex;gap:6px;margin-bottom:10px}
-.tabs button{border:1px solid var(--grey-20);background:var(--conduit);font:600 12px var(--font);padding:5px 12px;border-radius:var(--r-pill);cursor:pointer;color:var(--terminal)}
-.tabs button.on{background:var(--grounded);border-color:var(--grounded);color:#fff}
-table{width:100%;border-collapse:collapse;font-size:12.5px}
-th{text-align:left;font-weight:500;color:var(--grey-60);font-size:11px;text-transform:uppercase;letter-spacing:.4px;padding:4px 4px;border-bottom:1px solid var(--grey-20)}
-td{padding:6px 4px;border-bottom:1px solid #f3f2f0;vertical-align:top}
-td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
-tr.click{cursor:pointer} tr.click:hover{background:var(--conduit)}
-.chip{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:var(--r-pill);background:var(--conduit);color:var(--grey-80);white-space:nowrap}
-.chip.base{background:var(--green-5);color:var(--grounded)}
-.big{font-size:44px;font-weight:600;color:var(--grounded);line-height:1}
-.bar{display:grid;grid-template-columns:70px 1fr 34px;align-items:center;gap:8px;font-size:12px;margin:5px 0}
-.bar .t{height:8px;background:var(--conduit);border-radius:4px;overflow:hidden}
-.bar .f{height:100%;background:var(--grounded);border-radius:4px}
-.reasons{margin:10px 0 0;padding-left:18px;color:var(--grey-80)}
-.muted{color:var(--grey-60)} .small{font-size:12px}
-.stats{display:grid;grid-template-columns:1fr;gap:0;font-size:12.5px;margin-top:10px}
-.stats div{display:flex;justify-content:space-between;border-bottom:1px solid #f3f2f0;padding:3px 0}
-.stats b{font-weight:600}
-.legend{background:#fff;padding:10px 12px;border-radius:12px;box-shadow:var(--shadow);font:12px var(--font);color:var(--terminal)}
-.legend .row{display:flex;align-items:center;gap:6px;margin:3px 0}
-.legend .sw{width:12px;height:12px;border-radius:50%;display:inline-block}
-.legend .sw.sq{border-radius:3px}
-.leaflet-tooltip{font:12px var(--font);border-radius:8px}
-details summary{cursor:pointer;font-weight:600;font-size:13px}
-.w{display:grid;grid-template-columns:70px 1fr 34px;gap:8px;align-items:center;font-size:12px;margin-top:6px}
-.w input{accent-color:var(--grounded)}
-footer{font-size:11px;color:var(--grey-60);padding:6px 20px;background:var(--conduit)}
-.err{margin:40px auto;max-width:520px}
-@media (max-width:820px){main{flex-direction:column-reverse} aside{width:100%;max-height:50vh}}
-</style>
-</head>
-<body>
-<header>
-  <div>
-    <div class="eyebrow">Built for Base Power × AITX Hackathon</div>
-    <h1>Livewire: "Where Texas needs backup next."</h1>
-  </div>
-  <div class="spacer"></div>
-  <a href="rep.html?zip=${r.zip}" target="_blank" class="chip base">Open sales view →</a>
-  <div class="spacer"></div>
-  <div class="seg" role="tablist" aria-label="Market">
-    <button id="mBase" class="on">Base market today</button>
-    <button id="mAll">All of Texas</button>
-  </div>
-  <label class="ctl">Min score <input id="minScore" type="range" min="0" max="90" step="5" value="0"> <span id="minScoreV">0</span></label>
-  <label class="ctl"><input id="fitOnly" type="checkbox" checked> Good-fit homes only</label>
-</header>
-
-<?php if ($err): ?>
-  <div class="card err"><b>Data not ready.</b><p><?= htmlspecialchars($err) ?></p></div>
-<?php else: ?>
-<main>
-  <aside>
-    <div class="card kpis">
-      <div class="kpi"><div class="v" id="kZips">–</div><div class="l">ZIPs shown</div></div>
-      <div class="kpi"><div class="v" id="kHomes">–</div><div class="l">Fit homes</div></div>
-      <div class="kpi"><div class="v" id="kHD">–</div><div class="l">High-demand homes (70+)</div></div>
-    </div>
-
-    <div class="card" id="detail">
-      <div class="muted">Click a ZIP on the map or in the list to see why it scores the way it does.</div>
-    </div>
-
-    <div class="card">
-      <div class="tabs"><button id="tZips" class="on">Top ZIPs</button><button id="tUtil">By utility</button></div>
-      <div id="list"></div>
-    </div>
-
-    <div class="card">
-      <details>
-        <summary>Model weights</summary>
-        <div class="w"><span>Need</span><input id="wNeed" type="range" min="0" max="100" value="40"><span id="wNeedV">40</span></div>
-        <div class="w"><span>Value</span><input id="wValue" type="range" min="0" max="100" value="30"><span id="wValueV">30</span></div>
-        <div class="w"><span>Ability</span><input id="wAbility" type="range" min="0" max="100" value="30"><span id="wAbilityV">30</span></div>
-        <p class="small muted">Need = outage history, severe-weather risk, electric heat. Value = home size, home value, electric load.
-          Ability = income, homeownership, long-term owners, new-home growth. Weights re-normalize automatically.</p>
-      </details>
-    </div>
-  </aside>
-  <div id="map"></div>
-</main>
-<footer>Data: DOE EAGLE-I outages (ORNL, CC BY 4.0) · FEMA National Risk Index · U.S. Census ACS 2020–24 · PUCT Power to Choose · EIA-861 via NREL. Scores updated <?= htmlspecialchars($updated) ?>. Not an official Base product.</footer>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script>
-const ROWS = <?= json_encode($rows, JSON_UNESCAPED_SLASHES) ?>;
+// Livewire BI map page: Leaflet choropleth of Texas ZIPs by Resilience Demand Score.
+// Data: ROWS (from data/tx_zip_final.csv, embedded by index.php) + data/tx_zips.geojson + data/tx_counties.geojson
+(() => {
+const ROWS = JSON.parse(document.getElementById('zip-data').textContent);   // embedded by index.php
 const HIGH = 70;
 // Sequential ramp, one hue (Base greens), light -> dark = low -> high demand
 const BINS = [[70,'#1E4D2B'],[60,'#77A45A'],[50,'#B2DD79'],[0,'#D6F0B4']];
@@ -295,7 +147,8 @@ function renderDetail(r) {
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
       <div><div style="font-size:18px;font-weight:600">${r.zip}</div><div class="muted">${r.county_name}</div>
         <div style="margin-top:6px"><span class="chip ${r.base_market === 'yes' ? 'base' : ''}">${label(r.market)}</span>
-        <span class="small muted">${r.utility || ''}</span></div></div>
+        <span class="small muted">${r.utility || ''}</span></div>
+        <a class="chip base link" href="rep.html?zip=${r.zip}" target="_blank" style="margin-top:8px">Open sales view →</a></div>
       <div style="text-align:right"><div class="big">${r._s == null ? '–' : r._s.toFixed(0)}</div><div class="small muted">of 100</div></div>
     </div>
     ${bar('Need', r.need_score)}${bar('Value', r.value_score)}${bar('Ability', r.ability_score)}
@@ -329,7 +182,4 @@ $('tUtil').onclick = () => { state.tab = 'util'; $('tUtil').classList.add('on');
 ['Need', 'Value', 'Ability'].forEach(k => $('w' + k).oninput = e => {
   state.w[k.toLowerCase()] = +e.target.value; $('w' + k + 'V').textContent = e.target.value; draw(); });
 draw();
-</script>
-<?php endif; ?>
-</body>
-</html>
+})();

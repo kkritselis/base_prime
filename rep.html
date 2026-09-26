@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Livewire BI: Sales call view</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Zilla+Slab:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/rep.css?v=20260926d">
+</head>
+<body>
+<header>
+  <div>
+    <div class="eyebrow">Livewire BI · Sales call view</div>
+    <h1>Outage history for your customer's ZIP</h1>
+  </div>
+  <form id="zipForm" class="search" autocomplete="off">
+    <input id="zipInput" inputmode="numeric" pattern="\d{5}" maxlength="5" placeholder="ZIP code" aria-label="ZIP code" autofocus>
+    <button type="submit">Look up</button>
+  </form>
+  <a class="back" href="./">← Map</a>
+</header>
+
+<main id="app">
+  <section class="card empty" id="empty">
+    <p>Type the customer's ZIP code to pull up their area's outage history, the storms they'll remember, and talking points.</p>
+    <p class="muted small">Try 77523, 78944 or 75001.</p>
+  </section>
+
+  <div id="result" hidden>
+    <section class="card hero">
+      <div>
+        <div class="zip" id="hZip"></div>
+        <div class="muted" id="hPlace"></div>
+        <div class="chips" id="hChips"></div>
+      </div>
+      <div class="score"><div class="big" id="hScore"></div><div class="small muted">demand score</div></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>Hours without power, month by month</h2>
+        <span class="small muted" id="chartSub"></span>
+      </div>
+      <div class="scale" role="group" aria-label="Chart scale">
+        <button class="on" data-scale="log" title="Spreads out small everyday outages and big storms">Log scale</button>
+        <button data-scale="linear" title="True proportions: big storms dominate">Linear</button>
+      </div>
+      <div id="chart" class="chart" role="img"></div>
+      <details class="small">
+        <summary>Show as table</summary>
+        <div id="yearTable"></div>
+      </details>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>When outages happen</h2>
+        <span class="small muted">Hours without power per home, by calendar month and year</span>
+      </div>
+      <p id="seasonNote" class="note"></p>
+      <div class="scale" role="group" aria-label="Seasonality view">
+        <button class="on" data-season="stack">Stacked by year</button>
+        <button data-season="heat">Heatmap</button>
+      </div>
+      <div class="scale" id="seasonScale" role="group" aria-label="Stacked chart scale">
+        <button class="on" data-sscale="log" title="Spreads out quiet months and big storm months">Log scale</button>
+        <button data-sscale="linear" title="True proportions">Linear</button>
+      </div>
+      <div id="season" class="chart" role="img"></div>
+      <div id="seasonLegend" class="legend-row small"></div>
+    </section>
+
+    <div class="grid2">
+      <section class="card">
+        <div class="card-head"><h2>Talking points</h2><button class="ghost" data-copy="points">Copy</button></div>
+        <ul id="points" class="points"></ul>
+      </section>
+      <section class="card">
+        <h2>What causes outages here</h2>
+        <div id="causes"></div>
+        <p class="small muted">Share of outage hours since 2018, matched to NOAA storm reports.</p>
+      </section>
+    </div>
+
+    <section class="card">
+      <div class="card-head"><h2>Campaign brief</h2><button class="ghost" data-copy="brief">Copy</button></div>
+      <p class="small muted">Context for whoever runs ads in this ZIP. Drafts to adapt, not final copy.</p>
+      <div id="brief"></div>
+    </section>
+  </div>
+</main>
+
+<footer>County-level outage data 2018–2025 (DOE EAGLE-I, ORNL, CC BY 4.0) · storm causes from NOAA Storm Events · FEMA National Risk Index · U.S. Census ACS. Not an official Base product.</footer>
+
+<div id="tip" class="tip" hidden></div>
+<script src="js/rep.js?v=20260926d"></script>
+</body>
+</html>
